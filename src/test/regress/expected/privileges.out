@@ -2895,3 +2895,96 @@ DROP SCHEMA regress_roleoption;
 DROP ROLE regress_roleoption_protagonist;
 DROP ROLE regress_roleoption_donor;
 DROP ROLE regress_roleoption_recipient;
+-- Test zero privileges.
+BEGIN;
+-- Create an owner for tested objects because output contains owner info.
+-- Must be superuser to be owner of tablespace.
+CREATE ROLE regress_zeropriv_owner SUPERUSER;
+SET LOCAL ROLE regress_zeropriv_owner;
+ALTER TABLESPACE regress_tblspace OWNER TO CURRENT_USER;
+REVOKE ALL ON TABLESPACE regress_tblspace FROM CURRENT_USER;
+\db+ regress_tblspace
+                                                List of tablespaces
+       Name       |         Owner          |    Location     | Access privileges | Options |  Size   | Description 
+------------------+------------------------+-----------------+-------------------+---------+---------+-------------
+ regress_tblspace | regress_zeropriv_owner | pg_tblspc/16385 | (none)            |         | 0 bytes | 
+(1 row)
+
+CREATE DOMAIN regress_zeropriv_domain AS int;
+REVOKE ALL ON DOMAIN regress_zeropriv_domain FROM CURRENT_USER, PUBLIC;
+\dD+ regress_zeropriv_domain
+                                                    List of domains
+ Schema |          Name           |  Type   | Collation | Nullable | Default | Check | Access privileges | Description 
+--------+-------------------------+---------+-----------+----------+---------+-------+-------------------+-------------
+ public | regress_zeropriv_domain | integer |           |          |         |       | (none)            | 
+(1 row)
+
+CREATE PROCEDURE regress_zeropriv_proc() LANGUAGE sql AS '';
+REVOKE ALL ON PROCEDURE regress_zeropriv_proc() FROM CURRENT_USER, PUBLIC;
+\df+ regress_zeropriv_proc
+                                                                                            List of functions
+ Schema |         Name          | Result data type | Argument data types | Type | Volatility | Parallel |         Owner          | Security | Access privileges | Language | Internal name | Description 
+--------+-----------------------+------------------+---------------------+------+------------+----------+------------------------+----------+-------------------+----------+---------------+-------------
+ public | regress_zeropriv_proc |                  |                     | proc | volatile   | unsafe   | regress_zeropriv_owner | invoker  | (none)            | sql      |               | 
+(1 row)
+
+ALTER LANGUAGE plpgsql OWNER TO CURRENT_USER;
+REVOKE ALL ON LANGUAGE plpgsql FROM CURRENT_USER, PUBLIC;
+\dL+ plpgsql
+                                                                                           List of languages
+  Name   |         Owner          | Trusted | Internal language |      Call handler      |       Validator        |          Inline handler          | Access privileges |         Description          
+---------+------------------------+---------+-------------------+------------------------+------------------------+----------------------------------+-------------------+------------------------------
+ plpgsql | regress_zeropriv_owner | t       | f                 | plpgsql_call_handler() | plpgsql_validator(oid) | plpgsql_inline_handler(internal) | (none)            | PL/pgSQL procedural language
+(1 row)
+
+SELECT lo_create(3001);
+ lo_create 
+-----------
+      3001
+(1 row)
+
+REVOKE ALL ON LARGE OBJECT 3001 FROM CURRENT_USER;
+\dl+
+                          Large objects
+  ID  |         Owner          | Access privileges | Description 
+------+------------------------+-------------------+-------------
+ 3001 | regress_zeropriv_owner | (none)            | 
+(1 row)
+
+CREATE SCHEMA regress_zeropriv_schema;
+REVOKE ALL ON SCHEMA regress_zeropriv_schema FROM CURRENT_USER;
+\dn+ regress_zeropriv_schema
+                                  List of schemas
+          Name           |         Owner          | Access privileges | Description 
+-------------------------+------------------------+-------------------+-------------
+ regress_zeropriv_schema | regress_zeropriv_owner | (none)            | 
+(1 row)
+
+CREATE TABLE regress_zeropriv_tbl (a int);
+REVOKE ALL ON TABLE regress_zeropriv_tbl FROM CURRENT_USER;
+\dp regress_zeropriv_tbl
+                                    Access privileges
+ Schema |         Name         | Type  | Access privileges | Column privileges | Policies 
+--------+----------------------+-------+-------------------+-------------------+----------
+ public | regress_zeropriv_tbl | table | (none)            |                   | 
+(1 row)
+
+CREATE TYPE regress_zeropriv_type AS (a int);
+REVOKE ALL ON TYPE regress_zeropriv_type FROM CURRENT_USER, PUBLIC;
+\dT+ regress_zeropriv_type
+                                                          List of data types
+ Schema |         Name          |     Internal name     | Size  | Elements |         Owner          | Access privileges | Description 
+--------+-----------------------+-----------------------+-------+----------+------------------------+-------------------+-------------
+ public | regress_zeropriv_type | regress_zeropriv_type | tuple |          | regress_zeropriv_owner | (none)            | 
+(1 row)
+
+ALTER DATABASE :"DBNAME" OWNER TO CURRENT_USER;
+REVOKE ALL ON DATABASE :"DBNAME" FROM CURRENT_USER, PUBLIC;
+\l :"DBNAME"
+                                                        List of databases
+    Name    |         Owner          | Encoding  | Locale Provider | Collate | Ctype | ICU Locale | ICU Rules | Access privileges 
+------------+------------------------+-----------+-----------------+---------+-------+------------+-----------+-------------------
+ regression | regress_zeropriv_owner | SQL_ASCII | libc            | C       | C     |            |           | (none)
+(1 row)
+
+ROLLBACK;

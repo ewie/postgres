@@ -6718,7 +6718,11 @@ static void
 printACLColumn(PQExpBuffer buf, const char *colname)
 {
 	appendPQExpBuffer(buf,
-					  "pg_catalog.array_to_string(%s, E'\\n') AS \"%s\"",
+					  "CASE pg_catalog.cardinality(%s)\n"
+					  "  WHEN 0 THEN '%s'\n"
+					  "  ELSE pg_catalog.array_to_string(%s, E'\\n')\n"
+					  "END AS \"%s\"",
+					  colname, gettext_noop("(none)"),
 					  colname, gettext_noop("Access privileges"));
 }
 
