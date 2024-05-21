@@ -132,6 +132,8 @@ create_ctas_internal(List *attrList, IntoClause *into)
 	/* Create the "view" part of a materialized view. */
 	if (is_matview)
 	{
+		// TODO handle "OR REPLACE" analogous to "CREATE OR REPLACE VIEW"
+
 		/* StoreViewQuery scribbles on tree, so make a copy */
 		Query	   *query = (Query *) copyObject(into->viewQuery);
 
@@ -395,14 +397,15 @@ CreateTableAsRelExists(CreateTableAsStmt *ctas)
 	oldrelid = get_relname_relid(into->rel->relname, nspid);
 	if (OidIsValid(oldrelid))
 	{
-		if (!ctas->if_not_exists)
+		if (!ctas->if_not_exists && !ctas->or_replace)
 			ereport(ERROR,
 					(errcode(ERRCODE_DUPLICATE_TABLE),
 					 errmsg("relation \"%s\" already exists",
 							into->rel->relname)));
 
 		/*
-		 * The relation exists and IF NOT EXISTS has been specified.
+		 * The relation exists and IF NOT EXISTS or OR REPLACE has been
+		 * specified.
 		 *
 		 * If we are in an extension script, insist that the pre-existing
 		 * object be a member of the extension, to avoid security risks.
@@ -410,11 +413,12 @@ CreateTableAsRelExists(CreateTableAsStmt *ctas)
 		ObjectAddressSet(address, RelationRelationId, oldrelid);
 		checkMembershipInCurrentExtension(&address);
 
-		/* OK to skip */
-		ereport(NOTICE,
-				(errcode(ERRCODE_DUPLICATE_TABLE),
-				 errmsg("relation \"%s\" already exists, skipping",
-						into->rel->relname)));
+		if (ctas->if_not_exists)
+			/* OK to skip */
+			ereport(NOTICE,
+					(errcode(ERRCODE_DUPLICATE_TABLE),
+					 errmsg("relation \"%s\" already exists, skipping",
+							into->rel->relname)));
 		return true;
 	}
 
