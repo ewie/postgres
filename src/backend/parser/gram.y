@@ -4840,7 +4840,7 @@ CreateMatViewStmt:
 					ctas->objtype = OBJECT_MATVIEW;
 					ctas->is_select_into = false;
 					ctas->if_not_exists = false;
-					// TODO store "OR REPLACE" flag
+					ctas->or_replace = true;
 					/* cram additional flags into the IntoClause */
 					$7->rel->relpersistence = $4;
 					$7->skipData = !($10);
