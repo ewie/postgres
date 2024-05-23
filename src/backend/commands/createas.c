@@ -68,6 +68,8 @@ static bool intorel_receive(TupleTableSlot *slot, DestReceiver *self);
 static void intorel_shutdown(DestReceiver *self);
 static void intorel_destroy(DestReceiver *self);
 
+extern void checkViewColumns(TupleDesc newdesc, TupleDesc olddesc);
+
 
 /*
  * create_ctas_internal
@@ -80,7 +82,8 @@ static ObjectAddress
 create_ctas_internal(List *attrList, IntoClause *into)
 {
 	CreateStmt *create = makeNode(CreateStmt);
-	bool		is_matview;
+	bool		is_matview,
+				replace_matview = false;
 	char		relkind;
 	Datum		toast_options;
 	static char *validnsps[] = HEAP_RELOPT_NAMESPACES;
@@ -90,26 +93,87 @@ create_ctas_internal(List *attrList, IntoClause *into)
 	is_matview = (into->viewQuery != NULL);
 	relkind = is_matview ? RELKIND_MATVIEW : RELKIND_RELATION;
 
-	/*
-	 * Create the target relation by faking up a CREATE TABLE parsetree and
-	 * passing it to DefineRelation.
-	 */
-	create->relation = into->rel;
-	create->tableElts = attrList;
-	create->inhRelations = NIL;
-	create->ofTypename = NULL;
-	create->constraints = NIL;
-	create->options = into->options;
-	create->oncommit = into->onCommit;
-	create->tablespacename = into->tableSpaceName;
-	create->if_not_exists = false;
-	create->accessMethod = into->accessMethod;
+	if (is_matview) {
+		// FIXME implementation copied from DefineVirtualRelation
 
-	/*
-	 * Create the relation.  (This will error out if there's an existing view,
-	 * so we don't need more code to complain if "replace" is false.)
-	 */
-	intoRelationAddr = DefineRelation(create, relkind, InvalidOid, NULL, NULL);
+		Oid			matview_oid;
+		LOCKMODE	lockmode;
+
+		lockmode = into->replace ? AccessExclusiveLock : NoLock;
+		(void) RangeVarGetAndCheckCreationNamespace(into->rel, lockmode, &matview_oid);
+
+		if (OidIsValid(matview_oid) && into->replace) {
+			Relation		rel;
+			List		   *atcmds = NIL;
+			AlterTableCmd  *atcmd;
+			TupleDesc		descriptor;
+
+			rel = relation_open(matview_oid, NoLock);
+
+			if (rel->rd_rel->relkind != RELKIND_MATVIEW)
+				ereport(ERROR,
+						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+						 errmsg("\"%s\" is not a materialized view",
+								RelationGetRelationName(rel))));
+
+			CheckTableNotInUse(rel, "CREATE OR REPLACE MATERIALIZED VIEW");
+
+			descriptor = BuildDescForRelation(attrList);
+			checkViewColumns(descriptor, rel->rd_att);
+
+			/* Add new attributes via ALTER TABLE. */
+			if (list_length(attrList) > rel->rd_att->natts) {
+				ListCell   *c;
+				int			skip = rel->rd_att->natts;
+
+				foreach(c, attrList)
+				{
+					if (skip > 0) {
+						skip--;
+						continue;
+					}
+					atcmd = makeNode(AlterTableCmd);
+					atcmd->subtype = AT_AddColumnToView; // TODO may require new AlterTableType
+					atcmd->def = (Node *) lfirst(c);
+					atcmds = lappend(atcmds, atcmd);
+				}
+
+				AlterTableInternal(matview_oid, atcmds, true);
+
+				CommandCounterIncrement();
+			}
+
+			ObjectAddressSet(intoRelationAddr, RelationRelationId, matview_oid);
+
+			relation_close(rel, NoLock);
+
+			replace_matview = true;
+		}
+	}
+
+	if (!replace_matview)
+	{
+		/*
+		 * Create the target relation by faking up a CREATE TABLE parsetree and
+		 * passing it to DefineRelation.
+		 */
+		create->relation = into->rel;
+		create->tableElts = attrList;
+		create->inhRelations = NIL;
+		create->ofTypename = NULL;
+		create->constraints = NIL;
+		create->options = into->options;
+		create->oncommit = into->onCommit;
+		create->tablespacename = into->tableSpaceName;
+		create->if_not_exists = false;
+		create->accessMethod = into->accessMethod;
+
+		/*
+		 * Create the relation.  (This will error out if there's an existing view,
+		 * so we don't need more code to complain if "replace" is false.)
+		 */
+		intoRelationAddr = DefineRelation(create, relkind, InvalidOid, NULL, NULL);
+	}
 
 	/*
 	 * If necessary, create a TOAST table for the target table.  Note that
@@ -144,7 +208,7 @@ create_ctas_internal(List *attrList, IntoClause *into)
 		/* StoreViewQuery scribbles on tree, so make a copy */
 		Query	   *query = (Query *) copyObject(into->viewQuery);
 
-		StoreViewQuery(intoRelationAddr.objectId, query, false);
+		StoreViewQuery(intoRelationAddr.objectId, query, replace_matview);
 		CommandCounterIncrement();
 	}
 
@@ -242,7 +306,7 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 	QueryDesc  *queryDesc;
 
 	/* Check if the relation exists or not */
-	if (CreateTableAsRelExists(stmt))
+	if (CreateTableAsRelExists(stmt) && !(is_matview && into->replace))
 		return InvalidObjectAddress;
 
 	/*
@@ -404,7 +468,7 @@ CreateTableAsRelExists(CreateTableAsStmt *ctas)
 	oldrelid = get_relname_relid(into->rel->relname, nspid);
 	if (OidIsValid(oldrelid))
 	{
-		if (!ctas->if_not_exists && !ctas->replace)
+		if (!ctas->if_not_exists && !into->replace)
 			ereport(ERROR,
 					(errcode(ERRCODE_DUPLICATE_TABLE),
 					 errmsg("relation \"%s\" already exists",

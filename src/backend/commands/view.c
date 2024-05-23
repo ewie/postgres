@@ -30,7 +30,7 @@
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
 
-static void checkViewColumns(TupleDesc newdesc, TupleDesc olddesc);
+void checkViewColumns(TupleDesc newdesc, TupleDesc olddesc);
 
 /*---------------------------------------------------------------------
  * DefineVirtualRelation
@@ -263,7 +263,7 @@ DefineVirtualRelation(RangeVar *relation, List *tlist, bool replace,
  * added to generate specific complaints.  Also, we allow the new view to have
  * more columns than the old.
  */
-static void
+void
 checkViewColumns(TupleDesc newdesc, TupleDesc olddesc)
 {
 	int			i;
