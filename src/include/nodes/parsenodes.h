@@ -3898,7 +3898,7 @@ typedef struct CreateTableAsStmt
 	ObjectType	objtype;		/* OBJECT_TABLE or OBJECT_MATVIEW */
 	bool		is_select_into; /* it was written as SELECT INTO */
 	bool		if_not_exists;	/* just do nothing if it already exists? */
-	bool		or_replace;		/* replace matview */
+	bool		replace;		/* replace existing matview? */
 } CreateTableAsStmt;
 
 /* ----------------------

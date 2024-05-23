@@ -404,7 +404,7 @@ CreateTableAsRelExists(CreateTableAsStmt *ctas)
 	oldrelid = get_relname_relid(into->rel->relname, nspid);
 	if (OidIsValid(oldrelid))
 	{
-		if (!ctas->if_not_exists && !ctas->or_replace)
+		if (!ctas->if_not_exists && !ctas->replace)
 			ereport(ERROR,
 					(errcode(ERRCODE_DUPLICATE_TABLE),
 					 errmsg("relation \"%s\" already exists",
