@@ -322,13 +322,22 @@ SELECT * FROM matview_foo;
 CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 2 AS a;
 SELECT * FROM matview_foo;
 
-CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 3 AS a, 4 AS b;
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 'x' AS a; -- error: cannot change data type
 SELECT * FROM matview_foo;
 
-CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 3 AS a, 4 AS c; -- error: cannot rename column
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 3 AS a, '4' COLLATE "C" AS b;
 SELECT * FROM matview_foo;
 
-CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 4 AS a, 5 AS b, 6 AS c WITH NO DATA;
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 4 AS a, '5' COLLATE "POSIX" AS b; -- error: cannot change collation
+SELECT * FROM matview_foo;
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 4 AS a; -- error: cannot drop columns
+SELECT * FROM matview_foo;
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 5 AS a, '6' COLLATE "C" AS c; -- error: cannot rename column
+SELECT * FROM matview_foo;
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 6 AS a, '7' COLLATE "C" AS b, 8 AS c WITH NO DATA;
 SELECT * FROM matview_foo;  -- error: not populated
 
 REFRESH MATERIALIZED VIEW matview_foo;
