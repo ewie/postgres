@@ -202,15 +202,6 @@ create_ctas_internal(List *attrList, IntoClause *into)
 	/* Create the "view" part of a materialized view. */
 	if (is_matview)
 	{
-		// TODO handle "OR REPLACE" analogous to "CREATE OR REPLACE VIEW"
-		//
-		// from src/backend/commands/view.c:DefineVirtualRelation:
-		//
-		// TupleDesc	descriptor;
-		// descriptor = BuildDescForRelation(attrList);
-		// checkViewColumns(descriptor, rel->rd_att);
-		// AlterTableInternal(viewOid, atcmds, true);
-
 		/* StoreViewQuery scribbles on tree, so make a copy */
 		Query	   *query = (Query *) copyObject(into->viewQuery);
 
