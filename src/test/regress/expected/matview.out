@@ -694,3 +694,75 @@ NOTICE:  relation "matview_ine_tab" already exists, skipping
 (0 rows)
 
 DROP MATERIALIZED VIEW matview_ine_tab;
+-- CREATE OR REPLACE MATERIALIZED VIEW
+CREATE MATERIALIZED VIEW matview_foo AS SELECT 1 AS a;
+SELECT * FROM matview_foo;
+ a 
+---
+ 1
+(1 row)
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 2 AS a;
+SELECT * FROM matview_foo;
+ a 
+---
+ 2
+(1 row)
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 3 AS a, 4 AS b;
+SELECT * FROM matview_foo;
+ a | b 
+---+---
+ 3 | 4
+(1 row)
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 3 AS a, 4 AS c; -- error: cannot rename column
+ERROR:  cannot change name of view column "b" to "c"
+HINT:  Use ALTER VIEW ... RENAME COLUMN ... to change name of view column instead.
+SELECT * FROM matview_foo;
+ a | b 
+---+---
+ 3 | 4
+(1 row)
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 4 AS a, 5 AS b, 6 AS c WITH NO DATA;
+SELECT * FROM matview_foo;  -- error: not populated
+ERROR:  materialized view "matview_foo" has not been populated
+HINT:  Use the REFRESH MATERIALIZED VIEW command.
+REFRESH MATERIALIZED VIEW matview_foo;
+SELECT * FROM matview_foo;
+ a | b | c 
+---+---+---
+ 4 | 5 | 6
+(1 row)
+
+CREATE VIEW not_a_matview AS SELECT 1 AS a;
+CREATE OR REPLACE MATERIALIZED VIEW not_a_matview AS SELECT 1 AS a;  -- error: not a matview
+ERROR:  "not_a_matview" is not a materialized view
+DROP VIEW not_a_matview;
+-- initial matview creation via CREATE OR REPLACE
+DROP MATERIALIZED VIEW matview_foo;
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 1 AS a;
+SELECT * FROM matview_foo;
+ a 
+---
+ 1
+(1 row)
+
+-- replace matview that has dependent view
+CREATE VIEW view_foo AS SELECT * FROM matview_foo;
+SELECT * FROM matview_foo, view_foo;
+ a | a 
+---+---
+ 1 | 1
+(1 row)
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 2 AS a, 3 AS b;
+SELECT * FROM matview_foo, view_foo;
+ a | b | a 
+---+---+---
+ 2 | 3 | 2
+(1 row)
+
+DROP VIEW view_foo;
+DROP MATERIALIZED VIEW matview_foo;
