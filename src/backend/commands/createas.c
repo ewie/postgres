@@ -30,6 +30,7 @@
 #include "access/xact.h"
 #include "catalog/namespace.h"
 #include "catalog/toasting.h"
+#include "commands/cluster.h"
 #include "commands/createas.h"
 #include "commands/matview.h"
 #include "commands/prepare.h"
@@ -38,7 +39,9 @@
 #include "miscadmin.h"
 #include "nodes/makefuncs.h"
 #include "nodes/nodeFuncs.h"
+#include "pgstat.h"
 #include "rewrite/rewriteHandler.h"
+#include "storage/lmgr.h"
 #include "tcop/tcopprot.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
@@ -69,6 +72,9 @@ static void intorel_shutdown(DestReceiver *self);
 static void intorel_destroy(DestReceiver *self);
 
 extern void checkViewColumns(TupleDesc newdesc, TupleDesc olddesc);
+extern uint64 refresh_matview_datafill(DestReceiver *dest, Query *query,
+									   const char *queryString);
+extern void refresh_by_heap_swap(Oid matviewOid, Oid OIDNewHeap, char relpersistence);
 
 
 /*
@@ -210,6 +216,32 @@ create_ctas_internal(List *attrList, IntoClause *into)
 
 		StoreViewQuery(intoRelationAddr.objectId, query, replace_matview);
 		CommandCounterIncrement();
+
+		if (replace_matview) {
+			// XXX copied truncation logic (via heap swap) from ExecRefreshMatView (!concurrent) that leaves an empty relation
+
+			Oid				matviewOid;
+			Relation		matviewRel;
+			Oid				OIDNewHeap;
+
+			matviewOid = RangeVarGetRelidExtended(into->rel, AccessExclusiveLock, 0, RangeVarCallbackMaintainsTable, NULL);
+			matviewRel = table_open(matviewOid, NoLock);
+
+			CheckTableNotInUse(matviewRel, "CREATE OR REPLACE MATERIALIZED VIEW");
+
+			SetMatViewPopulatedState(matviewRel, !into->skipData);
+
+			OIDNewHeap = make_new_heap(matviewOid, matviewRel->rd_rel->reltablespace, matviewRel->rd_rel->relam, matviewRel->rd_rel->relpersistence, ExclusiveLock);
+			LockRelationOid(OIDNewHeap, AccessExclusiveLock);
+
+			refresh_by_heap_swap(matviewOid, OIDNewHeap, matviewRel->rd_rel->relpersistence);
+
+			pgstat_count_truncate(matviewRel);
+
+			table_close(matviewRel, NoLock);
+
+			ObjectAddressSet(intoRelationAddr, RelationRelationId, matviewOid);
+		}
 	}
 
 	return intoRelationAddr;

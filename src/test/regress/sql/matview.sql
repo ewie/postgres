@@ -317,15 +317,25 @@ DROP MATERIALIZED VIEW matview_ine_tab;
 
 -- CREATE OR REPLACE MATERIALIZED VIEW
 CREATE MATERIALIZED VIEW matview_foo AS SELECT 1 AS a;
+SELECT * FROM matview_foo;
+
 CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 2 AS a;
 SELECT * FROM matview_foo;
+
 CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 3 AS a, 4 AS b;
 SELECT * FROM matview_foo;
-CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 3 AS a, 4 AS c; -- error
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 3 AS a, 4 AS c; -- error: cannot rename column
 SELECT * FROM matview_foo;
-CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 3 AS a, 4 AS b, 5 AS c WITH NO DATA;
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 4 AS a, 5 AS b, 6 AS c WITH NO DATA;
+SELECT * FROM matview_foo;  -- error: not populated
+
+REFRESH MATERIALIZED VIEW matview_foo;
 SELECT * FROM matview_foo;
+
 CREATE VIEW not_a_matview AS SELECT 1 AS a;
-CREATE OR REPLACE MATERIALIZED VIEW not_a_matview AS SELECT 1 AS a;  -- error
+CREATE OR REPLACE MATERIALIZED VIEW not_a_matview AS SELECT 1 AS a;  -- error: not a matview
+
 DROP VIEW not_a_matview;
 DROP MATERIALIZED VIEW matview_foo;
