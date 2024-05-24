@@ -4796,7 +4796,8 @@ ATPrepCmd(List **wqueue, Relation rel, AlterTableCmd *cmd,
 			pass = AT_PASS_ADD_COL;
 			break;
 		case AT_AddColumnToView:	/* add column via CREATE OR REPLACE VIEW */
-			ATSimplePermissions(cmd->subtype, rel, ATT_VIEW | ATT_MATVIEW); // TODO Use separate AlterTableType just for matviews?
+			/* TODO Use separate AlterTableType just for matviews? */
+			ATSimplePermissions(cmd->subtype, rel, ATT_VIEW | ATT_MATVIEW);
 			ATPrepAddColumn(wqueue, rel, recurse, recursing, true, cmd,
 							lockmode, context);
 			/* Recursion occurs during execution phase */
