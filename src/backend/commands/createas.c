@@ -99,8 +99,9 @@ create_ctas_internal(List *attrList, IntoClause *into)
 	is_matview = (into->viewQuery != NULL);
 	relkind = is_matview ? RELKIND_MATVIEW : RELKIND_RELATION;
 
-	if (is_matview) {
-		// FIXME implementation copied from DefineVirtualRelation
+	if (is_matview)
+	{
+		/* FIXME implementation copied from DefineVirtualRelation */
 
 		Oid			matview_oid;
 		LOCKMODE	lockmode;
@@ -108,11 +109,12 @@ create_ctas_internal(List *attrList, IntoClause *into)
 		lockmode = into->replace ? AccessExclusiveLock : NoLock;
 		(void) RangeVarGetAndCheckCreationNamespace(into->rel, lockmode, &matview_oid);
 
-		if (OidIsValid(matview_oid) && into->replace) {
-			Relation		rel;
-			List		   *atcmds = NIL;
-			AlterTableCmd  *atcmd;
-			TupleDesc		descriptor;
+		if (OidIsValid(matview_oid) && into->replace)
+		{
+			Relation	rel;
+			List	   *atcmds = NIL;
+			AlterTableCmd *atcmd;
+			TupleDesc	descriptor;
 
 			rel = relation_open(matview_oid, NoLock);
 
@@ -128,19 +130,23 @@ create_ctas_internal(List *attrList, IntoClause *into)
 			checkViewColumns(descriptor, rel->rd_att);
 
 			/* Add new attributes via ALTER TABLE. */
-			if (list_length(attrList) > rel->rd_att->natts) {
+			if (list_length(attrList) > rel->rd_att->natts)
+			{
 				ListCell   *c;
 				int			skip = rel->rd_att->natts;
 
 				foreach(c, attrList)
 				{
-					if (skip > 0) {
+					if (skip > 0)
+					{
 						skip--;
 						continue;
 					}
 					atcmd = makeNode(AlterTableCmd);
-					atcmd->subtype = AT_AddColumnToView; // TODO may require new AlterTableType
+					/* TODO may require new AlterTableType */
+					atcmd->subtype = AT_AddColumnToView;
 					atcmd->def = (Node *) lfirst(c);
+
 					atcmds = lappend(atcmds, atcmd);
 				}
 
@@ -160,8 +166,8 @@ create_ctas_internal(List *attrList, IntoClause *into)
 	if (!replace_matview)
 	{
 		/*
-		 * Create the target relation by faking up a CREATE TABLE parsetree and
-		 * passing it to DefineRelation.
+		 * Create the target relation by faking up a CREATE TABLE parsetree
+		 * and passing it to DefineRelation.
 		 */
 		create->relation = into->rel;
 		create->tableElts = attrList;
@@ -175,10 +181,12 @@ create_ctas_internal(List *attrList, IntoClause *into)
 		create->accessMethod = into->accessMethod;
 
 		/*
-		 * Create the relation.  (This will error out if there's an existing view,
-		 * so we don't need more code to complain if "replace" is false.)
+		 * Create the relation.  (This will error out if there's an existing
+		 * view, so we don't need more code to complain if "replace" is
+		 * false.)
 		 */
-		intoRelationAddr = DefineRelation(create, relkind, InvalidOid, NULL, NULL);
+		intoRelationAddr = DefineRelation(create, relkind, InvalidOid, NULL,
+										  NULL);
 	}
 
 	/*
@@ -208,24 +216,36 @@ create_ctas_internal(List *attrList, IntoClause *into)
 		StoreViewQuery(intoRelationAddr.objectId, query, replace_matview);
 		CommandCounterIncrement();
 
-		if (replace_matview) {
-			// XXX copied truncation logic (via heap swap) from ExecRefreshMatView (!concurrent) that leaves an empty relation
+		if (replace_matview)
+		{
+			/*
+			 * XXX copied truncation logic (via heap swap) from
+			 * ExecRefreshMatView (!concurrent) that leaves an empty relation
+			 */
 
-			Oid				matviewOid;
-			Relation		matviewRel;
-			Oid				OIDNewHeap;
+			Oid			matviewOid;
+			Relation	matviewRel;
+			Oid			OIDNewHeap;
 
-			matviewOid = RangeVarGetRelidExtended(into->rel, AccessExclusiveLock, 0, RangeVarCallbackMaintainsTable, NULL);
+			matviewOid = RangeVarGetRelidExtended(into->rel,
+												  AccessExclusiveLock, 0,
+												  RangeVarCallbackMaintainsTable,
+												  NULL);
 			matviewRel = table_open(matviewOid, NoLock);
 
 			CheckTableNotInUse(matviewRel, "CREATE OR REPLACE MATERIALIZED VIEW");
 
 			SetMatViewPopulatedState(matviewRel, !into->skipData);
 
-			OIDNewHeap = make_new_heap(matviewOid, matviewRel->rd_rel->reltablespace, matviewRel->rd_rel->relam, matviewRel->rd_rel->relpersistence, ExclusiveLock);
+			OIDNewHeap = make_new_heap(matviewOid,
+									   matviewRel->rd_rel->reltablespace,
+									   matviewRel->rd_rel->relam,
+									   matviewRel->rd_rel->relpersistence,
+									   ExclusiveLock);
 			LockRelationOid(OIDNewHeap, AccessExclusiveLock);
 
-			refresh_by_heap_swap(matviewOid, OIDNewHeap, matviewRel->rd_rel->relpersistence);
+			refresh_by_heap_swap(matviewOid, OIDNewHeap,
+								 matviewRel->rd_rel->relpersistence);
 
 			pgstat_count_truncate(matviewRel);
 
