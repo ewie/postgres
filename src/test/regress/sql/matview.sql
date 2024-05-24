@@ -336,6 +336,11 @@ SELECT * FROM matview_foo;
 
 CREATE VIEW not_a_matview AS SELECT 1 AS a;
 CREATE OR REPLACE MATERIALIZED VIEW not_a_matview AS SELECT 1 AS a;  -- error: not a matview
-
 DROP VIEW not_a_matview;
+
+-- initial matview creation via CREATE OR REPLACE
+DROP MATERIALIZED VIEW matview_foo;
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 1 AS a;
+SELECT * FROM matview_foo;
+
 DROP MATERIALIZED VIEW matview_foo;
