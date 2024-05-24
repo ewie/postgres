@@ -709,14 +709,38 @@ SELECT * FROM matview_foo;
  2
 (1 row)
 
-CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 3 AS a, 4 AS b;
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 'x' AS a; -- error: cannot change data type
+ERROR:  cannot change data type of view column "a" from integer to text
+SELECT * FROM matview_foo;
+ a 
+---
+ 2
+(1 row)
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 3 AS a, '4' COLLATE "C" AS b;
 SELECT * FROM matview_foo;
  a | b 
 ---+---
  3 | 4
 (1 row)
 
-CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 3 AS a, 4 AS c; -- error: cannot rename column
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 4 AS a, '5' COLLATE "POSIX" AS b; -- error: cannot change collation
+ERROR:  cannot change collation of view column "b" from "C" to "POSIX"
+SELECT * FROM matview_foo;
+ a | b 
+---+---
+ 3 | 4
+(1 row)
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 4 AS a; -- error: cannot drop columns
+ERROR:  cannot drop columns from view
+SELECT * FROM matview_foo;
+ a | b 
+---+---
+ 3 | 4
+(1 row)
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 5 AS a, '6' COLLATE "C" AS c; -- error: cannot rename column
 ERROR:  cannot change name of view column "b" to "c"
 HINT:  Use ALTER VIEW ... RENAME COLUMN ... to change name of view column instead.
 SELECT * FROM matview_foo;
@@ -725,7 +749,7 @@ SELECT * FROM matview_foo;
  3 | 4
 (1 row)
 
-CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 4 AS a, 5 AS b, 6 AS c WITH NO DATA;
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 6 AS a, '7' COLLATE "C" AS b, 8 AS c WITH NO DATA;
 SELECT * FROM matview_foo;  -- error: not populated
 ERROR:  materialized view "matview_foo" has not been populated
 HINT:  Use the REFRESH MATERIALIZED VIEW command.
@@ -733,7 +757,7 @@ REFRESH MATERIALIZED VIEW matview_foo;
 SELECT * FROM matview_foo;
  a | b | c 
 ---+---+---
- 4 | 5 | 6
+ 6 | 7 | 8
 (1 row)
 
 CREATE VIEW not_a_matview AS SELECT 1 AS a;
