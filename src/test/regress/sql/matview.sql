@@ -343,4 +343,11 @@ DROP MATERIALIZED VIEW matview_foo;
 CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 1 AS a;
 SELECT * FROM matview_foo;
 
+-- replace matview that has dependent view
+CREATE VIEW view_foo AS SELECT * FROM matview_foo;
+SELECT * FROM matview_foo, view_foo;
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 2 AS a, 3 AS b;
+SELECT * FROM matview_foo, view_foo;
+
+DROP VIEW view_foo;
 DROP MATERIALIZED VIEW matview_foo;
