@@ -187,25 +187,25 @@ create_ctas_internal(List *attrList, IntoClause *into)
 		 */
 		intoRelationAddr = DefineRelation(create, relkind, InvalidOid, NULL,
 										  NULL);
+
+		/*
+		 * If necessary, create a TOAST table for the target table.  Note that
+		 * NewRelationCreateToastTable ends with CommandCounterIncrement(), so
+		 * that the TOAST table will be visible for insertion.
+		 */
+		CommandCounterIncrement();
+
+		/* parse and validate reloptions for the toast table */
+		toast_options = transformRelOptions((Datum) 0,
+											create->options,
+											"toast",
+											validnsps,
+											true, false);
+
+		(void) heap_reloptions(RELKIND_TOASTVALUE, toast_options, true);
+
+		NewRelationCreateToastTable(intoRelationAddr.objectId, toast_options);
 	}
-
-	/*
-	 * If necessary, create a TOAST table for the target table.  Note that
-	 * NewRelationCreateToastTable ends with CommandCounterIncrement(), so
-	 * that the TOAST table will be visible for insertion.
-	 */
-	CommandCounterIncrement();
-
-	/* parse and validate reloptions for the toast table */
-	toast_options = transformRelOptions((Datum) 0,
-										create->options,
-										"toast",
-										validnsps,
-										true, false);
-
-	(void) heap_reloptions(RELKIND_TOASTVALUE, toast_options, true);
-
-	NewRelationCreateToastTable(intoRelationAddr.objectId, toast_options);
 
 	/* Create the "view" part of a materialized view. */
 	if (is_matview)
