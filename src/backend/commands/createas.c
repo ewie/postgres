@@ -117,9 +117,9 @@ create_ctas_internal(List *attrList, IntoClause *into)
 
 		if (matviewRel->rd_rel->relkind != RELKIND_MATVIEW)
 			ereport(ERROR,
-					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
-					 errmsg("\"%s\" is not a materialized view",
-							RelationGetRelationName(matviewRel))));
+					errcode(ERRCODE_WRONG_OBJECT_TYPE),
+					errmsg("\"%s\" is not a materialized view",
+						   RelationGetRelationName(matviewRel)));
 
 		CheckTableNotInUse(matviewRel, "CREATE OR REPLACE MATERIALIZED VIEW");
 
@@ -508,9 +508,9 @@ CreateTableAsRelExists(CreateTableAsStmt *ctas)
 		if (ctas->if_not_exists)
 			/* OK to skip */
 			ereport(NOTICE,
-					(errcode(ERRCODE_DUPLICATE_TABLE),
-					 errmsg("relation \"%s\" already exists, skipping",
-							into->rel->relname)));
+					errcode(ERRCODE_DUPLICATE_TABLE),
+					errmsg("relation \"%s\" already exists, skipping",
+						   into->rel->relname));
 		return true;
 	}
 
