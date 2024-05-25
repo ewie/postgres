@@ -87,84 +87,105 @@ extern void refresh_by_heap_swap(Oid matviewOid, Oid OIDNewHeap, char relpersist
 static ObjectAddress
 create_ctas_internal(List *attrList, IntoClause *into)
 {
-	CreateStmt *create = makeNode(CreateStmt);
 	bool		is_matview,
-				replace_matview = false;
+				replace = false;
 	char		relkind;
-	Datum		toast_options;
-	static char *validnsps[] = HEAP_RELOPT_NAMESPACES;
+	Oid			matviewOid;
 	ObjectAddress intoRelationAddr;
 
 	/* This code supports both CREATE TABLE AS and CREATE MATERIALIZED VIEW */
 	is_matview = (into->viewQuery != NULL);
 	relkind = is_matview ? RELKIND_MATVIEW : RELKIND_RELATION;
 
+	/* Check if an existing materialized view needs to be replaced. */
 	if (is_matview)
 	{
-		/* FIXME implementation copied from DefineVirtualRelation */
-
-		Oid			matview_oid;
 		LOCKMODE	lockmode;
 
 		lockmode = into->replace ? AccessExclusiveLock : NoLock;
-		(void) RangeVarGetAndCheckCreationNamespace(into->rel, lockmode, &matview_oid);
-
-		if (OidIsValid(matview_oid) && into->replace)
-		{
-			Relation	rel;
-			List	   *atcmds = NIL;
-			AlterTableCmd *atcmd;
-			TupleDesc	descriptor;
-
-			rel = relation_open(matview_oid, NoLock);
-
-			if (rel->rd_rel->relkind != RELKIND_MATVIEW)
-				ereport(ERROR,
-						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
-						 errmsg("\"%s\" is not a materialized view",
-								RelationGetRelationName(rel))));
-
-			CheckTableNotInUse(rel, "CREATE OR REPLACE MATERIALIZED VIEW");
-
-			descriptor = BuildDescForRelation(attrList);
-			checkViewColumns(descriptor, rel->rd_att, true);
-
-			/* Add new attributes via ALTER TABLE. */
-			if (list_length(attrList) > rel->rd_att->natts)
-			{
-				ListCell   *c;
-				int			skip = rel->rd_att->natts;
-
-				foreach(c, attrList)
-				{
-					if (skip > 0)
-					{
-						skip--;
-						continue;
-					}
-					atcmd = makeNode(AlterTableCmd);
-					/* TODO may require new AlterTableType */
-					atcmd->subtype = AT_AddColumnToView;
-					atcmd->def = (Node *) lfirst(c);
-
-					atcmds = lappend(atcmds, atcmd);
-				}
-
-				AlterTableInternal(matview_oid, atcmds, true);
-
-				CommandCounterIncrement();
-			}
-
-			ObjectAddressSet(intoRelationAddr, RelationRelationId, matview_oid);
-
-			relation_close(rel, NoLock);
-
-			replace_matview = true;
-		}
+		(void) RangeVarGetAndCheckCreationNamespace(into->rel, lockmode,
+													&matviewOid);
+		replace = OidIsValid(matviewOid) && into->replace;
 	}
 
-	if (!replace_matview)
+	if (is_matview && replace)
 	{
+		Relation	matviewRel;
+		List	   *atcmds = NIL;
+		AlterTableCmd *atcmd;
+		TupleDesc	descriptor;
+		Oid			newHeapOid;
+
+		matviewRel = table_open(matviewOid, NoLock);
+
+		/* FIXME implementation copied from DefineVirtualRelation */
+
+		if (matviewRel->rd_rel->relkind != RELKIND_MATVIEW)
+			ereport(ERROR,
+					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+					 errmsg("\"%s\" is not a materialized view",
+							RelationGetRelationName(matviewRel))));
+
+		CheckTableNotInUse(matviewRel, "CREATE OR REPLACE MATERIALIZED VIEW");
+
+		descriptor = BuildDescForRelation(attrList);
+		checkViewColumns(descriptor, matviewRel->rd_att, true);
+
+		/* Add new attributes via ALTER TABLE. */
+		if (list_length(attrList) > matviewRel->rd_att->natts)
+		{
+			ListCell   *c;
+			int			skip = matviewRel->rd_att->natts;
+
+			foreach(c, attrList)
+			{
+				if (skip > 0)
+				{
+					skip--;
+					continue;
+				}
+				atcmd = makeNode(AlterTableCmd);
+				/* TODO may require new AlterTableType */
+				atcmd->subtype = AT_AddColumnToView;
+				atcmd->def = (Node *) lfirst(c);
+
+				atcmds = lappend(atcmds, atcmd);
+			}
+
+			AlterTableInternal(matviewOid, atcmds, true);
+
+			CommandCounterIncrement();
+		}
+
+		/*
+		 * XXX copied truncation logic (via heap swap) from
+		 * ExecRefreshMatView (!concurrent) that leaves an empty relation
+		 */
+
+		SetMatViewPopulatedState(matviewRel, !into->skipData);
+
+		newHeapOid = make_new_heap(matviewOid,
+								   matviewRel->rd_rel->reltablespace,
+								   matviewRel->rd_rel->relam,
+								   matviewRel->rd_rel->relpersistence,
+								   ExclusiveLock);
+		LockRelationOid(newHeapOid, AccessExclusiveLock);
+
+		refresh_by_heap_swap(matviewOid, newHeapOid,
+							 matviewRel->rd_rel->relpersistence);
+
+		pgstat_count_truncate(matviewRel);
+
+		table_close(matviewRel, NoLock);
+
+		ObjectAddressSet(intoRelationAddr, RelationRelationId, matviewOid);
+	}
+	else
+	{
+		CreateStmt *create = makeNode(CreateStmt);
+		Datum		toast_options;
+		static char *validnsps[] = HEAP_RELOPT_NAMESPACES;
+
 		/*
 		 * Create the target relation by faking up a CREATE TABLE parsetree
 		 * and passing it to DefineRelation.
@@ -213,46 +234,8 @@ create_ctas_internal(List *attrList, IntoClause *into)
 		/* StoreViewQuery scribbles on tree, so make a copy */
 		Query	   *query = (Query *) copyObject(into->viewQuery);
 
-		StoreViewQuery(intoRelationAddr.objectId, query, replace_matview);
+		StoreViewQuery(intoRelationAddr.objectId, query, replace);
 		CommandCounterIncrement();
-
-		if (replace_matview)
-		{
-			/*
-			 * XXX copied truncation logic (via heap swap) from
-			 * ExecRefreshMatView (!concurrent) that leaves an empty relation
-			 */
-
-			Oid			matviewOid;
-			Relation	matviewRel;
-			Oid			OIDNewHeap;
-
-			matviewOid = RangeVarGetRelidExtended(into->rel,
-												  AccessExclusiveLock, 0,
-												  RangeVarCallbackMaintainsTable,
-												  NULL);
-			matviewRel = table_open(matviewOid, NoLock);
-
-			CheckTableNotInUse(matviewRel, "CREATE OR REPLACE MATERIALIZED VIEW");
-
-			SetMatViewPopulatedState(matviewRel, !into->skipData);
-
-			OIDNewHeap = make_new_heap(matviewOid,
-									   matviewRel->rd_rel->reltablespace,
-									   matviewRel->rd_rel->relam,
-									   matviewRel->rd_rel->relpersistence,
-									   ExclusiveLock);
-			LockRelationOid(OIDNewHeap, AccessExclusiveLock);
-
-			refresh_by_heap_swap(matviewOid, OIDNewHeap,
-								 matviewRel->rd_rel->relpersistence);
-
-			pgstat_count_truncate(matviewRel);
-
-			table_close(matviewRel, NoLock);
-
-			ObjectAddressSet(intoRelationAddr, RelationRelationId, matviewOid);
-		}
 	}
 
 	return intoRelationAddr;
