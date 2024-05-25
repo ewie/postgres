@@ -30,8 +30,6 @@
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
 
-void checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview);
-
 /*---------------------------------------------------------------------
  * DefineVirtualRelation
  *

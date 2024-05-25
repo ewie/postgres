@@ -71,11 +71,6 @@ static bool intorel_receive(TupleTableSlot *slot, DestReceiver *self);
 static void intorel_shutdown(DestReceiver *self);
 static void intorel_destroy(DestReceiver *self);
 
-extern void checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview);
-extern uint64 refresh_matview_datafill(DestReceiver *dest, Query *query,
-									   const char *queryString);
-extern void refresh_by_heap_swap(Oid matviewOid, Oid OIDNewHeap, char relpersistence);
-
 
 /*
  * create_ctas_internal
