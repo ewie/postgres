@@ -71,7 +71,7 @@ static bool intorel_receive(TupleTableSlot *slot, DestReceiver *self);
 static void intorel_shutdown(DestReceiver *self);
 static void intorel_destroy(DestReceiver *self);
 
-extern void checkViewColumns(TupleDesc newdesc, TupleDesc olddesc);
+extern void checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview);
 extern uint64 refresh_matview_datafill(DestReceiver *dest, Query *query,
 									   const char *queryString);
 extern void refresh_by_heap_swap(Oid matviewOid, Oid OIDNewHeap, char relpersistence);
@@ -127,7 +127,7 @@ create_ctas_internal(List *attrList, IntoClause *into)
 			CheckTableNotInUse(rel, "CREATE OR REPLACE MATERIALIZED VIEW");
 
 			descriptor = BuildDescForRelation(attrList);
-			checkViewColumns(descriptor, rel->rd_att);
+			checkViewColumns(descriptor, rel->rd_att, true);
 
 			/* Add new attributes via ALTER TABLE. */
 			if (list_length(attrList) > rel->rd_att->natts)
