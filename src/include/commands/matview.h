@@ -33,10 +33,4 @@ extern DestReceiver *CreateTransientRelDestReceiver(Oid transientoid);
 
 extern bool MatViewIncrementalMaintenanceIsEnabled(void);
 
-extern uint64 refresh_matview_datafill(DestReceiver *dest, Query *query,
-									   const char *queryString);
-
-extern void refresh_by_heap_swap(Oid matviewOid, Oid OIDNewHeap,
-								 char relpersistence);
-
 #endif							/* MATVIEW_H */

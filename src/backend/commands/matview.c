@@ -59,9 +59,12 @@ static void transientrel_startup(DestReceiver *self, int operation, TupleDesc ty
 static bool transientrel_receive(TupleTableSlot *slot, DestReceiver *self);
 static void transientrel_shutdown(DestReceiver *self);
 static void transientrel_destroy(DestReceiver *self);
+static uint64 refresh_matview_datafill(DestReceiver *dest, Query *query,
+									   const char *queryString);
 static char *make_temptable_name_n(char *tempname, int n);
 static void refresh_by_match_merge(Oid matviewOid, Oid tempOid, Oid relowner,
 								   int save_sec_context);
+static void refresh_by_heap_swap(Oid matviewOid, Oid OIDNewHeap, char relpersistence);
 static bool is_usable_unique_index(Relation indexRel);
 static void OpenMatViewIncrementalMaintenance(void);
 static void CloseMatViewIncrementalMaintenance(void);
@@ -382,7 +385,7 @@ RefreshMatViewByOid(Oid matviewOid, bool skipData, bool concurrent,
  *
  * Returns number of rows inserted.
  */
-uint64
+static uint64
 refresh_matview_datafill(DestReceiver *dest, Query *query,
 						 const char *queryString)
 {
@@ -883,7 +886,7 @@ refresh_by_match_merge(Oid matviewOid, Oid tempOid, Oid relowner,
  * the target's indexes and throw away the transient table.  Security context
  * swapping is handled by the called function, so it is not needed here.
  */
-void
+static void
 refresh_by_heap_swap(Oid matviewOid, Oid OIDNewHeap, char relpersistence)
 {
 	finish_heap_swap(matviewOid, OIDNewHeap, false, false, true, true,
