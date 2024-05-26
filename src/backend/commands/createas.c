@@ -153,8 +153,8 @@ create_ctas_internal(List *attrList, IntoClause *into)
 		}
 
 		/*
-		 * XXX copied truncation logic (via heap swap) from
-		 * ExecRefreshMatView (!concurrent) that leaves an empty relation
+		 * XXX copied truncation logic (via heap swap) from ExecRefreshMatView
+		 * (!concurrent) that leaves an empty relation
 		 */
 
 		SetMatViewPopulatedState(matviewRel, !into->skipData);
