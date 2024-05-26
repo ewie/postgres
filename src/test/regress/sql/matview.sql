@@ -372,4 +372,24 @@ SET enable_seqscan = off;
 SELECT * FROM matview_foo WHERE s = 4;
 RESET enable_seqscan;
 
+SELECT c.relname, c.reloptions, s.spcname, a.amname
+  FROM pg_class c
+    LEFT JOIN pg_tablespace s ON s.oid = c.reltablespace
+    LEFT JOIN pg_am a ON a.oid = c.relam
+  WHERE c.relname = 'matview_foo';
+
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo
+  USING heap2
+  WITH (fillfactor = 50)
+  TABLESPACE regress_tblspace
+  AS SELECT 3 AS a, 1 AS s;
+
+SELECT * FROM matview_foo;
+
+SELECT c.relname, c.reloptions, s.spcname, a.amname
+  FROM pg_class c
+    LEFT JOIN pg_tablespace s ON s.oid = c.reltablespace
+    LEFT JOIN pg_am a ON a.oid = c.relam
+  WHERE c.relname = 'matview_foo';
+
 DROP MATERIALIZED VIEW matview_foo;
