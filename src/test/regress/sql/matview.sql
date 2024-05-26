@@ -357,6 +357,19 @@ CREATE VIEW view_foo AS SELECT * FROM matview_foo;
 SELECT * FROM matview_foo, view_foo;
 CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 2 AS a, 3 AS b;
 SELECT * FROM matview_foo, view_foo;
-
 DROP VIEW view_foo;
+
+-- test index rebuild
+DROP MATERIALIZED VIEW matview_foo;
+CREATE MATERIALIZED VIEW matview_foo AS SELECT 1 AS a, s FROM generate_series(1, 10) s;
+SELECT * FROM matview_foo ORDER BY s;
+CREATE UNIQUE INDEX ON matview_foo (s);
+SET enable_seqscan = off;
+SELECT * FROM matview_foo WHERE s = 4;
+RESET enable_seqscan;
+CREATE OR REPLACE MATERIALIZED VIEW matview_foo AS SELECT 2 AS a, s FROM generate_series(1, 10) s;
+SET enable_seqscan = off;
+SELECT * FROM matview_foo WHERE s = 4;
+RESET enable_seqscan;
+
 DROP MATERIALIZED VIEW matview_foo;
