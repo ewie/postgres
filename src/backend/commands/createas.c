@@ -145,7 +145,40 @@ create_ctas_internal(List *attrList, IntoClause *into)
 
 				atcmds = lappend(atcmds, atcmd);
 			}
+		}
 
+		/* Set access method via ALTER TABLE. */
+		if (into->accessMethod != NULL)
+		{
+			atcmd = makeNode(AlterTableCmd);
+			atcmd->subtype = AT_SetAccessMethod;
+			atcmd->name = into->accessMethod;
+
+			atcmds = lappend(atcmds, atcmd);
+		}
+
+		/* Set tablespace via ALTER TABLE. */
+		if (into->tableSpaceName != NULL)
+		{
+			atcmd = makeNode(AlterTableCmd);
+			atcmd->subtype = AT_SetTableSpace;
+			atcmd->name = into->tableSpaceName;
+
+			atcmds = lappend(atcmds, atcmd);
+		}
+
+		/* Set storage parameters via ALTER TABLE. */
+		if (into->options != NIL)
+		{
+			atcmd = makeNode(AlterTableCmd);
+			atcmd->subtype = AT_ReplaceRelOptions;
+			atcmd->def = (Node *) into->options;
+
+			atcmds = lappend(atcmds, atcmd);
+		}
+
+		if (atcmds != NIL)
+		{
 			AlterTableInternal(matviewOid, atcmds, true);
 
 			CommandCounterIncrement();
