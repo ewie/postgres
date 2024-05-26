@@ -109,9 +109,8 @@ create_ctas_internal(List *attrList, IntoClause *into)
 		List	   *atcmds = NIL;
 		AlterTableCmd *atcmd;
 		TupleDesc	descriptor;
-		Oid			newHeapOid;
 
-		matviewRel = table_open(matviewOid, NoLock);
+		matviewRel = relation_open(matviewOid, NoLock);
 
 		/* FIXME implementation copied from DefineVirtualRelation */
 
@@ -152,26 +151,7 @@ create_ctas_internal(List *attrList, IntoClause *into)
 			CommandCounterIncrement();
 		}
 
-		/*
-		 * XXX copied truncation logic (via heap swap) from ExecRefreshMatView
-		 * (!concurrent) that leaves an empty relation
-		 */
-
-		SetMatViewPopulatedState(matviewRel, !into->skipData);
-
-		newHeapOid = make_new_heap(matviewOid,
-								   matviewRel->rd_rel->reltablespace,
-								   matviewRel->rd_rel->relam,
-								   matviewRel->rd_rel->relpersistence,
-								   ExclusiveLock);
-		LockRelationOid(newHeapOid, AccessExclusiveLock);
-
-		refresh_by_heap_swap(matviewOid, newHeapOid,
-							 matviewRel->rd_rel->relpersistence);
-
-		pgstat_count_truncate(matviewRel);
-
-		table_close(matviewRel, NoLock);
+		relation_close(matviewRel, NoLock);
 
 		ObjectAddressSet(intoRelationAddr, RelationRelationId, matviewOid);
 	}
@@ -327,8 +307,26 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 	QueryDesc  *queryDesc;
 
 	/* Check if the relation exists or not */
-	if (CreateTableAsRelExists(stmt) && !(is_matview && into->replace))
+	if (CreateTableAsRelExists(stmt))
+	{
+		/* An existing materialized view can be replaced. */
+		if (is_matview && into->replace)
+		{
+			RefreshMatViewStmt *refresh;
+
+			/* Change the relation to match the new query. */
+			(void) create_ctas_nodata(query->targetList, into);
+
+			/* Refresh the materialized view with a faked statement. */
+			refresh = makeNode(RefreshMatViewStmt);
+			refresh->relation = into->rel;
+			refresh->skipData = into->skipData;
+			refresh->concurrent = false;
+			return ExecRefreshMatView(refresh, NULL, NULL, NULL);
+		}
+
 		return InvalidObjectAddress;
+	}
 
 	/*
 	 * Create the tuple receiver object and insert info it will need
