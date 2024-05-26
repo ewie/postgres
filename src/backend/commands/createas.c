@@ -82,7 +82,7 @@ create_ctas_internal(List *attrList, IntoClause *into)
 	bool		is_matview,
 				replace = false;
 	char		relkind;
-	Oid			matviewOid;
+	Oid			matviewOid = InvalidOid;
 	ObjectAddress intoRelationAddr;
 
 	/* This code supports both CREATE TABLE AS and CREATE MATERIALIZED VIEW */
