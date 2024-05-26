@@ -136,7 +136,7 @@ create_ctas_internal(List *attrList, IntoClause *into)
 					continue;
 				}
 				atcmd = makeNode(AlterTableCmd);
-				/* TODO may require new AlterTableType */
+				// TODO Need new AlterTableType?
 				atcmd->subtype = AT_AddColumnToView;
 				atcmd->def = (Node *) lfirst(c);
 
