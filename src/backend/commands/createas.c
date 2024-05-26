@@ -102,31 +102,31 @@ create_ctas_internal(List *attrList, IntoClause *into)
 
 	if (is_matview && replace)
 	{
-		Relation	matviewRel;
+		Relation	rel;
 		List	   *atcmds = NIL;
 		AlterTableCmd *atcmd;
 		TupleDesc	descriptor;
 
-		matviewRel = relation_open(matviewOid, NoLock);
+		rel = relation_open(matviewOid, NoLock);
 
 		/* FIXME implementation copied from DefineVirtualRelation */
 
-		if (matviewRel->rd_rel->relkind != RELKIND_MATVIEW)
+		if (rel->rd_rel->relkind != RELKIND_MATVIEW)
 			ereport(ERROR,
 					errcode(ERRCODE_WRONG_OBJECT_TYPE),
 					errmsg("\"%s\" is not a materialized view",
-						   RelationGetRelationName(matviewRel)));
+						   RelationGetRelationName(rel)));
 
-		CheckTableNotInUse(matviewRel, "CREATE OR REPLACE MATERIALIZED VIEW");
+		CheckTableNotInUse(rel, "CREATE OR REPLACE MATERIALIZED VIEW");
 
 		descriptor = BuildDescForRelation(attrList);
-		checkViewColumns(descriptor, matviewRel->rd_att, true);
+		checkViewColumns(descriptor, rel->rd_att, true);
 
 		/* Add new attributes via ALTER TABLE. */
-		if (list_length(attrList) > matviewRel->rd_att->natts)
+		if (list_length(attrList) > rel->rd_att->natts)
 		{
 			ListCell   *c;
-			int			skip = matviewRel->rd_att->natts;
+			int			skip = rel->rd_att->natts;
 
 			foreach(c, attrList)
 			{
@@ -181,7 +181,7 @@ create_ctas_internal(List *attrList, IntoClause *into)
 			CommandCounterIncrement();
 		}
 
-		relation_close(matviewRel, NoLock);
+		relation_close(rel, NoLock);
 
 		ObjectAddressSet(intoRelationAddr, RelationRelationId, matviewOid);
 	}
@@ -344,7 +344,7 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 		{
 			RefreshMatViewStmt *refresh;
 
-			/* Change the relation to match the new query. */
+			/* Change the relation to match the new query and other options. */
 			(void) create_ctas_nodata(query->targetList, into);
 
 			/* Refresh the materialized view with a faked statement. */
@@ -352,6 +352,7 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 			refresh->relation = into->rel;
 			refresh->skipData = into->skipData;
 			refresh->concurrent = false;
+
 			return ExecRefreshMatView(refresh, NULL, NULL, NULL);
 		}
 
