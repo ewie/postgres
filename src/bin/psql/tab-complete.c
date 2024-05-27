@@ -1811,7 +1811,7 @@ psql_completion(const char *text, int start, int end)
 	/* complete with something you can create or replace */
 	else if (TailMatches("CREATE", "OR", "REPLACE"))
 		COMPLETE_WITH("FUNCTION", "PROCEDURE", "LANGUAGE", "RULE", "VIEW",
-					  "AGGREGATE", "TRANSFORM", "TRIGGER");
+					  "AGGREGATE", "TRANSFORM", "TRIGGER", "MATERIALIZED VIEW");
 
 /* DROP, but not DROP embedded in other commands */
 	/* complete with something you can drop */
