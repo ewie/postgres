@@ -315,87 +315,38 @@ EXPLAIN (ANALYZE, COSTS OFF, SUMMARY OFF, TIMING OFF)
     SELECT 1 / 0 WITH NO DATA; -- ok
 DROP MATERIALIZED VIEW matview_ine_tab;
 
--- CREATE OR REPLACE MATERIALIZED VIEW
-CREATE MATERIALIZED VIEW mvtest_replace AS
+--
+-- test CREATE OR REPLACE MATERIALIZED VIEW
+--
+
+-- matview does not already exist
+DROP MATERIALIZED VIEW IF EXISTS mvtest_replace;
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
   SELECT 1 AS a;
 SELECT * FROM mvtest_replace;
 
--- replace query without altering columns
+-- replace query with data
 CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
   SELECT 2 AS a;
 SELECT * FROM mvtest_replace;
 
--- cannot change column data type
+-- replace query without data
 CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
-  SELECT 'x' AS a;
-SELECT * FROM mvtest_replace;
-
-CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
-  SELECT 3 AS a, '4' COLLATE "C" AS b;
-SELECT * FROM mvtest_replace;
-
--- cannot change column collation
-CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
-  SELECT 4 AS a, '5' COLLATE "POSIX" AS b;
-SELECT * FROM mvtest_replace;
-
--- cannot drop column
-CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
-  SELECT 4 AS a;
-SELECT * FROM mvtest_replace;
-
--- cannot rename column
-CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
-  SELECT 5 AS a, '6' COLLATE "C" AS c;
-SELECT * FROM mvtest_replace;
-
--- replace without data
-CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
-  SELECT 6 AS a, '7' COLLATE "C" AS b, 8 AS c WITH NO DATA;
+  SELECT 3 AS a
+  WITH NO DATA;
 SELECT * FROM mvtest_replace; -- error: not populated
 REFRESH MATERIALIZED VIEW mvtest_replace;
 SELECT * FROM mvtest_replace;
 
--- CREATE OR REPLACE MATERIALIZED VIEW must target a matview
-CREATE VIEW mvtest_not_mv AS
-  SELECT 1 AS a;
-CREATE OR REPLACE MATERIALIZED VIEW mvtest_not_mv AS
-  SELECT 1 AS a;  -- error: not a matview
-DROP VIEW mvtest_not_mv;
-
--- CREATE OR REPLACE nonexistent matview
-DROP MATERIALIZED VIEW mvtest_replace;
+-- add column
 CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
-  SELECT 1 AS a;
+  SELECT 4 AS a, 1 b;
 SELECT * FROM mvtest_replace;
 
--- can replace matview despite having a dependent view
-CREATE VIEW mvtest_replace_v AS
-  SELECT * FROM mvtest_replace;
-SELECT * FROM mvtest_replace, mvtest_replace_v;
-CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
-  SELECT 2 AS a, 3 AS b;
-SELECT * FROM mvtest_replace, mvtest_replace_v;
-DROP VIEW mvtest_replace_v;
-
--- index gets rebuilt when replacing with data
-DROP MATERIALIZED VIEW mvtest_replace;
-CREATE MATERIALIZED VIEW mvtest_replace AS
-  SELECT 1 AS a, s FROM generate_series(1, 10) s;
-SELECT * FROM mvtest_replace ORDER BY s;
-CREATE UNIQUE INDEX ON mvtest_replace (s);
-SET enable_seqscan = off; -- force index scan
-SELECT * FROM mvtest_replace WHERE s = 4;
-RESET enable_seqscan;
-CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
-  SELECT 2 AS a, s FROM generate_series(1, 10) s;
-SET enable_seqscan = off; -- force index scan
-SELECT * FROM mvtest_replace WHERE s = 4;
-RESET enable_seqscan;
-
 -- replace table options
-SELECT c.relname, c.reloptions, s.spcname, a.amname
-  FROM pg_class c
+SELECT m.*, c.relname, c.reloptions, s.spcname, a.amname
+  FROM mvtest_replace m
+    CROSS JOIN pg_class c
     LEFT JOIN pg_tablespace s ON s.oid = c.reltablespace
     LEFT JOIN pg_am a ON a.oid = c.relam
   WHERE c.relname = 'mvtest_replace';
@@ -403,12 +354,67 @@ CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace
   USING heap2
   WITH (fillfactor = 50)
   TABLESPACE regress_tblspace
-  AS SELECT 3 AS a, 1 AS s;
-SELECT * FROM mvtest_replace;
-SELECT c.relname, c.reloptions, s.spcname, a.amname
-  FROM pg_class c
+  AS SELECT 5 AS a, 1 AS b;
+SELECT m.*, c.relname, c.reloptions, s.spcname, a.amname
+  FROM mvtest_replace m
+    CROSS JOIN pg_class c
     LEFT JOIN pg_tablespace s ON s.oid = c.reltablespace
     LEFT JOIN pg_am a ON a.oid = c.relam
   WHERE c.relname = 'mvtest_replace';
+
+-- can replace matview that has a dependent view
+CREATE VIEW mvtest_replace_v AS
+  SELECT * FROM mvtest_replace;
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 6 AS a, 1 AS b;
+SELECT * FROM mvtest_replace, mvtest_replace_v;
+DROP VIEW mvtest_replace_v;
+
+-- index gets rebuilt when replacing with data
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 7 AS a, 1 AS b;
+CREATE UNIQUE INDEX ON mvtest_replace (b);
+SELECT * FROM mvtest_replace;
+SET enable_seqscan = off; -- force index scan
+EXPLAIN (COSTS OFF) SELECT * FROM mvtest_replace WHERE b = 1;
+SELECT * FROM mvtest_replace WHERE b = 1;
+RESET enable_seqscan;
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 8 AS a, 1 AS b;
+SET enable_seqscan = off; -- force index scan
+EXPLAIN (COSTS OFF) SELECT * FROM mvtest_replace WHERE b = 1;
+SELECT * FROM mvtest_replace WHERE b = 1;
+RESET enable_seqscan;
+
+-- cannot change column data type
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 9 AS a, 'x' AS b; -- error
+SELECT * FROM mvtest_replace;
+
+-- cannot rename column
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 10 AS a, 1 AS b2; -- error
+SELECT * FROM mvtest_replace;
+
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 11 AS a, 1 AS b, 'y' COLLATE "C" AS c;
+SELECT * FROM mvtest_replace;
+
+-- cannot change column collation
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 12 AS a, 1 AS b, 'x' COLLATE "POSIX" AS c; -- error
+SELECT * FROM mvtest_replace;
+
+-- cannot drop column
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 13 AS a, 1 AS b; -- error
+SELECT * FROM mvtest_replace;
+
+-- must target a matview
+CREATE VIEW mvtest_not_mv AS
+  SELECT 1 AS a;
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_not_mv AS
+  SELECT 1 AS a; -- error
+DROP VIEW mvtest_not_mv;
 
 DROP MATERIALIZED VIEW mvtest_replace;
