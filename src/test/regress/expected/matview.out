@@ -878,4 +878,10 @@ CREATE OR REPLACE MATERIALIZED VIEW mvtest_not_mv AS
   SELECT 1 AS a; -- error
 ERROR:  "mvtest_not_mv" is not a materialized view
 DROP VIEW mvtest_not_mv;
+-- cannot use OR REPLACE with IF NOT EXISTS
+CREATE OR REPLACE MATERIALIZED VIEW IF NOT EXISTS mvtest_replace AS
+  SELECT 1 AS a;
+ERROR:  syntax error at or near "NOT"
+LINE 1: CREATE OR REPLACE MATERIALIZED VIEW IF NOT EXISTS mvtest_rep...
+                                               ^
 DROP MATERIALIZED VIEW mvtest_replace;
