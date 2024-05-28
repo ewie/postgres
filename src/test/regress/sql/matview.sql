@@ -417,4 +417,8 @@ CREATE OR REPLACE MATERIALIZED VIEW mvtest_not_mv AS
   SELECT 1 AS a; -- error
 DROP VIEW mvtest_not_mv;
 
+-- cannot use OR REPLACE with IF NOT EXISTS
+CREATE OR REPLACE MATERIALIZED VIEW IF NOT EXISTS mvtest_replace AS
+  SELECT 1 AS a;
+
 DROP MATERIALIZED VIEW mvtest_replace;
