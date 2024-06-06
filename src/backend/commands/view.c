@@ -274,8 +274,8 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview)
 					errmsg("cannot drop columns from materialized view"));
 		else
 			ereport(ERROR,
-					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-					errmsg("cannot drop columns from view"));
+					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
+					 errmsg("cannot drop columns from view")));
 	}
 
 	for (i = 0; i < olddesc->natts; i++)
@@ -292,8 +292,8 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview)
 						errmsg("cannot drop columns from materialized view"));
 			else
 				ereport(ERROR,
-						errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-						errmsg("cannot drop columns from view"));
+						(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
+						 errmsg("cannot drop columns from view")));
 		}
 
 		if (strcmp(NameStr(newattr->attname), NameStr(oldattr->attname)) != 0)
@@ -307,11 +307,11 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview)
 						errhint("Use ALTER MATERIALIZED VIEW ... RENAME COLUMN ... to change name of materialized view column instead."));
 			else
 				ereport(ERROR,
-						errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-						errmsg("cannot change name of view column \"%s\" to \"%s\"",
-							   NameStr(oldattr->attname),
-							   NameStr(newattr->attname)),
-						errhint("Use ALTER VIEW ... RENAME COLUMN ... to change name of view column instead."));
+						(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
+						 errmsg("cannot change name of view column \"%s\" to \"%s\"",
+								NameStr(oldattr->attname),
+								NameStr(newattr->attname)),
+						 errhint("Use ALTER VIEW ... RENAME COLUMN ... to change name of view column instead.")));
 		}
 
 		/*
@@ -333,13 +333,13 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview)
 														newattr->atttypmod)));
 			else
 				ereport(ERROR,
-						errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-						errmsg("cannot change data type of view column \"%s\" from %s to %s",
-							   NameStr(oldattr->attname),
-							   format_type_with_typemod(oldattr->atttypid,
-														oldattr->atttypmod),
-							   format_type_with_typemod(newattr->atttypid,
-														newattr->atttypmod)));
+						(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
+						 errmsg("cannot change data type of view column \"%s\" from %s to %s",
+								NameStr(oldattr->attname),
+								format_type_with_typemod(oldattr->atttypid,
+														 oldattr->atttypmod),
+								format_type_with_typemod(newattr->atttypid,
+														 newattr->atttypmod))));
 		}
 
 		/*
@@ -357,11 +357,11 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview)
 							   get_collation_name(newattr->attcollation)));
 			else
 				ereport(ERROR,
-						errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-						errmsg("cannot change collation of view column \"%s\" from \"%s\" to \"%s\"",
-							   NameStr(oldattr->attname),
-							   get_collation_name(oldattr->attcollation),
-							   get_collation_name(newattr->attcollation)));
+						(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
+						 errmsg("cannot change collation of view column \"%s\" from \"%s\" to \"%s\"",
+								NameStr(oldattr->attname),
+								get_collation_name(oldattr->attcollation),
+								get_collation_name(newattr->attcollation))));
 		}
 	}
 
