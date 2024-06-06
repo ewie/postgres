@@ -537,9 +537,9 @@ CreateTableAsRelExists(CreateTableAsStmt *ctas)
 		if (ctas->if_not_exists)
 			/* OK to skip */
 			ereport(NOTICE,
-					errcode(ERRCODE_DUPLICATE_TABLE),
-					errmsg("relation \"%s\" already exists, skipping",
-						   into->rel->relname));
+					(errcode(ERRCODE_DUPLICATE_TABLE),
+					 errmsg("relation \"%s\" already exists, skipping",
+							into->rel->relname)));
 		return true;
 	}
 
