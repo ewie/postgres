@@ -78,8 +78,7 @@ CREATE [ OR REPLACE ] MATERIALIZED VIEW [ IF NOT EXISTS ] <replaceable>table_nam
       Do not throw an error if a materialized view with the same name already
       exists. A notice is issued in this case.  Note that there is no guarantee
       that the existing materialized view is anything like the one that would
-      have been created, unless use you use <literal>OR REPLACE</literal>
-      instead.
+      have been created, unless you use <literal>OR REPLACE</literal> instead.
      </para>
     </listitem>
    </varlistentry>
