@@ -109,8 +109,6 @@ create_ctas_internal(List *attrList, IntoClause *into)
 
 		rel = relation_open(matviewOid, NoLock);
 
-		/* FIXME implementation copied from DefineVirtualRelation */
-
 		if (rel->rd_rel->relkind != RELKIND_MATVIEW)
 			ereport(ERROR,
 					errcode(ERRCODE_WRONG_OBJECT_TYPE),
@@ -136,10 +134,8 @@ create_ctas_internal(List *attrList, IntoClause *into)
 					continue;
 				}
 				atcmd = makeNode(AlterTableCmd);
-				// TODO Need new AlterTableType?
 				atcmd->subtype = AT_AddColumnToView;
 				atcmd->def = (Node *) lfirst(c);
-
 				atcmds = lappend(atcmds, atcmd);
 			}
 		}
@@ -150,7 +146,6 @@ create_ctas_internal(List *attrList, IntoClause *into)
 			atcmd = makeNode(AlterTableCmd);
 			atcmd->subtype = AT_SetAccessMethod;
 			atcmd->name = into->accessMethod;
-
 			atcmds = lappend(atcmds, atcmd);
 		}
 
@@ -160,7 +155,6 @@ create_ctas_internal(List *attrList, IntoClause *into)
 			atcmd = makeNode(AlterTableCmd);
 			atcmd->subtype = AT_SetTableSpace;
 			atcmd->name = into->tableSpaceName;
-
 			atcmds = lappend(atcmds, atcmd);
 		}
 
@@ -170,14 +164,12 @@ create_ctas_internal(List *attrList, IntoClause *into)
 			atcmd = makeNode(AlterTableCmd);
 			atcmd->subtype = AT_ReplaceRelOptions;
 			atcmd->def = (Node *) into->options;
-
 			atcmds = lappend(atcmds, atcmd);
 		}
 
 		if (atcmds != NIL)
 		{
 			AlterTableInternal(matviewOid, atcmds, true);
-
 			CommandCounterIncrement();
 		}
 
@@ -347,7 +339,7 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 			/* Change the relation to match the new query and other options. */
 			(void) create_ctas_nodata(query->targetList, into);
 
-			/* Refresh the materialized view with a faked statement. */
+			/* Refresh the materialized view with a fake statement. */
 			refresh = makeNode(RefreshMatViewStmt);
 			refresh->relation = into->rel;
 			refresh->skipData = into->skipData;
