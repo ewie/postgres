@@ -22,6 +22,7 @@ extern ObjectAddress DefineView(ViewStmt *stmt, const char *queryString,
 
 extern void StoreViewQuery(Oid viewOid, Query *viewParse, bool replace);
 
-extern void checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview);
+extern void checkViewColumns(TupleDesc newdesc, TupleDesc olddesc,
+							 bool is_matview);
 
 #endif							/* VIEW_H */
