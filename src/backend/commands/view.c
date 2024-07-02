@@ -262,13 +262,13 @@ DefineVirtualRelation(RangeVar *relation, List *tlist, bool replace,
  * more columns than the old.
  */
 void
-checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview)
+checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool is_matview)
 {
 	int			i;
 
 	if (newdesc->natts < olddesc->natts)
 	{
-		if (matview)
+		if (is_matview)
 			ereport(ERROR,
 					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					errmsg("cannot drop columns from materialized view"));
@@ -286,7 +286,7 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview)
 		/* XXX msg not right, but we don't support DROP COL on view anyway */
 		if (newattr->attisdropped != oldattr->attisdropped)
 		{
-			if (matview)
+			if (is_matview)
 				ereport(ERROR,
 						errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 						errmsg("cannot drop columns from materialized view"));
@@ -298,7 +298,7 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview)
 
 		if (strcmp(NameStr(newattr->attname), NameStr(oldattr->attname)) != 0)
 		{
-			if (matview)
+			if (is_matview)
 				ereport(ERROR,
 						errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 						errmsg("cannot change name of materialized view column \"%s\" to \"%s\"",
@@ -322,7 +322,7 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview)
 		if (newattr->atttypid != oldattr->atttypid ||
 			newattr->atttypmod != oldattr->atttypmod)
 		{
-			if (matview)
+			if (is_matview)
 				ereport(ERROR,
 						errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 						errmsg("cannot change data type of materialized view column \"%s\" from %s to %s",
@@ -348,7 +348,7 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool matview)
 		 */
 		if (newattr->attcollation != oldattr->attcollation)
 		{
-			if (matview)
+			if (is_matview)
 				ereport(ERROR,
 						errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 						errmsg("cannot change collation of materialized view column \"%s\" from \"%s\" to \"%s\"",
