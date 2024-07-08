@@ -3613,13 +3613,16 @@ psql_completion(const char *text, int start, int end)
 		COMPLETE_WITH("SELECT");
 
 /* CREATE MATERIALIZED VIEW */
-	else if (Matches("CREATE", "MATERIALIZED"))
+	else if (Matches("CREATE", "MATERIALIZED") ||
+			 Matches("CREATE", "OR", "REPLACE", "MATERIALIZED"))
 		COMPLETE_WITH("VIEW");
-	/* Complete CREATE MATERIALIZED VIEW <name> with AS */
-	else if (Matches("CREATE", "MATERIALIZED", "VIEW", MatchAny))
+	/* Complete CREATE [ OR REPLACE ] MATERIALIZED VIEW <name> with AS */
+	else if (Matches("CREATE", "MATERIALIZED", "VIEW", MatchAny) ||
+			 Matches("CREATE", "OR", "REPLACE", "MATERIALIZED", "VIEW", MatchAny))
 		COMPLETE_WITH("AS");
-	/* Complete "CREATE MATERIALIZED VIEW <sth> AS with "SELECT" */
-	else if (Matches("CREATE", "MATERIALIZED", "VIEW", MatchAny, "AS"))
+	/* Complete "CREATE [ OR REPLACE ]MATERIALIZED VIEW <sth> AS with "SELECT" */
+	else if (Matches("CREATE", "MATERIALIZED", "VIEW", MatchAny, "AS") ||
+			 Matches("CREATE", "OR", "REPLACE", "MATERIALIZED", "VIEW", MatchAny, "AS"))
 		COMPLETE_WITH("SELECT");
 
 /* CREATE EVENT TRIGGER */
