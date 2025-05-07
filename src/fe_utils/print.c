@@ -3416,12 +3416,14 @@ IsPagerNeeded(const printTableContent *cont, int extra_lines, bool expanded,
 		{
 			printTableFooter *f;
 
-			/*
-			 * FIXME -- this is slightly bogus: it counts the number of
-			 * footers, not the number of lines in them.
-			 */
 			for (f = cont->footers; f; f = f->next)
-				lines++;
+			{
+				int			f_lines;
+
+				pg_wcssize((const unsigned char *) f->data, strlen(f->data),
+						   cont->opt->encoding, NULL, &f_lines, NULL);
+				lines += f_lines;
+			}
 		}
 
 		*fout = PageOutput(lines + extra_lines, cont->opt);
