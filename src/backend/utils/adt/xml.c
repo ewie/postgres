@@ -1795,7 +1795,6 @@ xml_parse(text *data, XmlOptionType xmloption_arg,
 	PgXmlErrorContext *xmlerrcxt;
 	volatile xmlParserCtxtPtr ctxt = NULL;
 	volatile xmlDocPtr doc = NULL;
-	volatile int save_keep_blanks = -1;
 
 	/*
 	 * This step looks annoyingly redundant, but we must do it to have a
@@ -1918,9 +1917,6 @@ xml_parse(text *data, XmlOptionType xmloption_arg,
 							"could not allocate XML document");
 			doc->standalone = standalone;
 
-			/* set parse options --- have to do this the ugly way */
-			save_keep_blanks = xmlKeepBlanksDefault(preserve_whitespace ? 1 : 0);
-
 			root = xmlNewNode(NULL, (const xmlChar *)"content-root");
 
 			if (root == NULL || xmlerrcxt->err_occurred)
@@ -1963,8 +1959,6 @@ fail:
 	}
 	PG_CATCH();
 	{
-		if (save_keep_blanks != -1)
-			xmlKeepBlanksDefault(save_keep_blanks);
 		if (doc != NULL)
 			xmlFreeDoc(doc);
 		if (ctxt != NULL)
@@ -1975,9 +1969,6 @@ fail:
 		PG_RE_THROW();
 	}
 	PG_END_TRY();
-
-	if (save_keep_blanks != -1)
-		xmlKeepBlanksDefault(save_keep_blanks);
 
 	if (ctxt != NULL)
 		xmlFreeParserCtxt(ctxt);
