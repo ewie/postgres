@@ -619,7 +619,7 @@ static int	num_os_semaphores;
 static bool data_checksums;
 static bool integer_datetimes;
 
-bool xml_enable_huge_parsing = false;
+bool		xml_enable_huge_parsing = false;
 
 #ifdef USE_ASSERT_CHECKING
 #define DEFAULT_ASSERT_ENABLED true

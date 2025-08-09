@@ -1769,7 +1769,7 @@ xml_doctype_in_content(const xmlChar *str)
  * xmloption_arg, but a DOCTYPE node in the input can force DOCUMENT mode).
  *
  * If parsed_nodes isn't NULL and we parse in CONTENT mode, the list
- * of parsed nodes from the xmlParseBalancedChunkMemory call will be returned
+ * of parsed nodes from the xmlParseInNodeContext call will be returned
  * to *parsed_nodes.  (It is caller's responsibility to free that.)
  *
  * Errors normally result in ereport(ERROR), but if escontext is an
@@ -1857,10 +1857,10 @@ xml_parse(text *data, XmlOptionType xmloption_arg,
 		 * Select parse options.
 		 *
 		 * Note that here we try to apply DTD defaults (XML_PARSE_DTDATTR)
-		 * according to SQL/XML:2008 GR 10.16.7.d: 'Default values defined
-		 * by internal DTD are applied'.  As for external DTDs, we try to
-		 * support them too (see SQL/XML:2008 GR 10.16.7.e), but that
-		 * doesn't really happen because xmlPgEntityLoader prevents it.
+		 * according to SQL/XML:2008 GR 10.16.7.d: 'Default values defined by
+		 * internal DTD are applied'.  As for external DTDs, we try to support
+		 * them too (see SQL/XML:2008 GR 10.16.7.e), but that doesn't really
+		 * happen because xmlPgEntityLoader prevents it.
 		 */
 		options = XML_PARSE_NOENT | XML_PARSE_DTDATTR
 			| (preserve_whitespace ? 0 : XML_PARSE_NOBLANKS)
@@ -1904,7 +1904,7 @@ xml_parse(text *data, XmlOptionType xmloption_arg,
 		{
 			xmlNodePtr	root;
 
-			/* set up document that xmlParseBalancedChunkMemory will add to */
+			/* set up document that xmlParseInNodeContext will add to */
 			doc = xmlNewDoc(version);
 			if (doc == NULL || xmlerrcxt->err_occurred)
 				xml_ereport(xmlerrcxt, ERROR, ERRCODE_OUT_OF_MEMORY,
@@ -1917,7 +1917,7 @@ xml_parse(text *data, XmlOptionType xmloption_arg,
 							"could not allocate XML document");
 			doc->standalone = standalone;
 
-			root = xmlNewNode(NULL, (const xmlChar *)"content-root");
+			root = xmlNewNode(NULL, (const xmlChar *) "content-root");
 
 			if (root == NULL || xmlerrcxt->err_occurred)
 				xml_ereport(xmlerrcxt, ERROR, ERRCODE_OUT_OF_MEMORY,
@@ -1933,8 +1933,8 @@ xml_parse(text *data, XmlOptionType xmloption_arg,
 				xmlParserErrors res;
 
 				res = xmlParseInNodeContext(root,
-											(char *)utf8string + count,
-											strlen((char *)utf8string + count),
+											(char *) utf8string + count,
+											strlen((char *) utf8string + count),
 											options,
 											&node_list);
 
