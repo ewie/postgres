@@ -99,6 +99,7 @@
 #include "utils/builtins.h"
 #include "utils/date.h"
 #include "utils/datetime.h"
+#include "utils/guc_hooks.h"
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
 #include "utils/syscache.h"
@@ -109,6 +110,7 @@
 int			xmlbinary = XMLBINARY_BASE64;
 int			xmloption = XMLOPTION_CONTENT;
 bool		xml_enable_huge_parsing = false;
+bool		xml_use_huge_parsing = false;
 
 #ifdef USE_LIBXML
 
@@ -1862,10 +1864,14 @@ xml_parse(text *data, XmlOptionType xmloption_arg,
 		 * internal DTD are applied'.  As for external DTDs, we try to support
 		 * them too (see SQL/XML:2008 GR 10.16.7.e), but that doesn't really
 		 * happen because xmlPgEntityLoader prevents it.
+		 *
+		 * Check both xml_enable_huge_parsing and xml_use_huge_parsing since a
+		 * superuser can start a session with the former disabled while the
+		 * latter is still enabled.
 		 */
 		options = XML_PARSE_NOENT | XML_PARSE_DTDATTR
 			| (preserve_whitespace ? 0 : XML_PARSE_NOBLANKS)
-			| (xml_enable_huge_parsing ? XML_PARSE_HUGE : 0);
+			| (xml_enable_huge_parsing && xml_use_huge_parsing ? XML_PARSE_HUGE : 0);
 
 		/* initialize output parameters */
 		if (parsed_xmloptiontype != NULL)
@@ -5176,4 +5182,18 @@ XmlTableDestroyOpaque(TableFuncScanState *state)
 #else
 	NO_XML_SUPPORT();
 #endif							/* not USE_LIBXML */
+}
+
+/*
+ * GUC check_hook for xml_use_huge_parsing
+ */
+bool
+check_xml_use_huge_parsing(bool *newval, void **extra, GucSource source)
+{
+	if (*newval && !xml_enable_huge_parsing)
+	{
+		GUC_check_errmsg("Cannot enable parameter when \"xml_enable_huge_parsing\" is false.");
+		return false;
+	}
+	return true;
 }

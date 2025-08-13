@@ -10366,6 +10366,21 @@ SET XML OPTION { DOCUMENT | CONTENT };
       </listitem>
      </varlistentry>
 
+     <varlistentry id="guc-xml_use_huge_parsing" xreflabel="xml_use_huge_parsing">
+      <term>
+       <varname>xml_use_huge_parsing</varname> (<type>boolean</type>)
+       <indexterm>
+        <primary><varname>xml_use_huge_parsing</varname> configuration parameter</primary>
+       </indexterm>
+      </term>
+      <listitem>
+       <para>
+        Enables the <literal>XML_PARSE_HUGE</literal> flag in <productname>libxml2</productname>
+        when allowed by parameter <varname>xml_enable_huge_parsing</varname>.
+       </para>
+      </listitem>
+     </varlistentry>
+
      <varlistentry id="guc-gin-pending-list-limit" xreflabel="gin_pending_list_limit">
       <term><varname>gin_pending_list_limit</varname> (<type>integer</type>)
       <indexterm>

@@ -2154,6 +2154,17 @@ struct config_bool ConfigureNamesBool[] =
 		NULL, NULL, NULL
 	},
 
+	{
+		{"xml_use_huge_parsing", PGC_SUSET, RESOURCES_MEM,
+			gettext_noop("Use XML parsing with support for huge text nodes (up to 1GB)."),
+			NULL,
+			GUC_NOT_IN_SAMPLE
+		},
+		&xml_use_huge_parsing,
+		false,
+		check_xml_use_huge_parsing, NULL, NULL
+	},
+
 	/* End-of-list marker */
 	{
 		{NULL, 0, 0, NULL, NULL}, NULL, false, NULL, NULL, NULL

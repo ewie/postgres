@@ -92,5 +92,6 @@ extern PGDLLIMPORT int xmloption;	/* XmlOptionType, but int for guc enum */
 extern PGDLLIMPORT const TableFuncRoutine XmlTableRoutine;
 
 extern PGDLLIMPORT bool xml_enable_huge_parsing;
+extern PGDLLIMPORT bool xml_use_huge_parsing;
 
 #endif							/* XML_H */

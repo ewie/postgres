@@ -6,6 +6,9 @@ CREATE TABLE xmltest (
 -- Show current setting for xml_enable_huge_parsing
 SHOW xml_enable_huge_parsing;
 
+-- Cannot set xml_use_huge_parsing when xml_enable_huge_parsing is off (default)
+SET xml_use_huge_parsing = on;
+
 INSERT INTO xmltest VALUES (1, '<value>one</value>');
 INSERT INTO xmltest VALUES (2, '<value>two</value>');
 INSERT INTO xmltest VALUES (3, '<wrong');
