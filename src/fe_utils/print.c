@@ -266,8 +266,8 @@ static const unicodeStyleFormat unicode_style = {
 
 /* Local functions */
 static int	strlen_max_width(unsigned char *str, int *target_width, int encoding);
-static void IsPagerNeeded(const printTableContent *cont, int extra_lines, bool expanded,
-						  FILE **fout, bool *is_pager);
+static void IsPagerNeeded(const printTableContent *cont, bool expanded,
+						  FILE **fout, bool *is_pager, unsigned int *width_wrap);
 
 static void print_aligned_vertical(const printTableContent *cont,
 								   FILE *fout, bool is_pager);
@@ -656,8 +656,6 @@ print_aligned_text(const printTableContent *cont, FILE *fout, bool is_pager)
 	unsigned char **format_buf;
 	unsigned int width_total;
 	unsigned int total_header_width;
-	unsigned int extra_row_output_lines = 0;
-	unsigned int extra_output_lines = 0;
 
 	const char *const *ptr;
 
@@ -722,14 +720,9 @@ print_aligned_text(const printTableContent *cont, FILE *fout, bool is_pager)
 			max_nl_lines[i] = nl_lines;
 		if (bytes_required > max_bytes[i])
 			max_bytes[i] = bytes_required;
-		if (nl_lines > extra_row_output_lines)
-			extra_row_output_lines = nl_lines;
 
 		width_header[i] = width;
 	}
-	/* Add height of tallest header column */
-	extra_output_lines += extra_row_output_lines;
-	extra_row_output_lines = 0;
 
 	/* scan all cells, find maximum width, compute cell_count */
 	for (i = 0, ptr = cont->cells; *ptr; ptr++, i++, cell_count++)
@@ -892,40 +885,7 @@ print_aligned_text(const printTableContent *cont, FILE *fout, bool is_pager)
 	/* Check if newlines or our wrapping now need the pager */
 	if (!is_pager && fout == stdout)
 	{
-		/* scan all cells, find maximum width, compute cell_count */
-		for (i = 0, ptr = cont->cells; *ptr; ptr++, cell_count++)
-		{
-			int			width,
-						nl_lines,
-						bytes_required;
-
-			pg_wcssize((const unsigned char *) *ptr, strlen(*ptr), encoding,
-					   &width, &nl_lines, &bytes_required);
-
-			/*
-			 * A row can have both wrapping and newlines that cause it to
-			 * display across multiple lines.  We check for both cases below.
-			 */
-			if (width > 0 && width_wrap[i])
-			{
-				unsigned int extra_lines;
-
-				/* don't count the first line of nl_lines - it's not "extra" */
-				extra_lines = ((width - 1) / width_wrap[i]) + nl_lines - 1;
-				if (extra_lines > extra_row_output_lines)
-					extra_row_output_lines = extra_lines;
-			}
-
-			/* i is the current column number: increment with wrap */
-			if (++i >= col_count)
-			{
-				i = 0;
-				/* At last column of each row, add tallest column height */
-				extra_output_lines += extra_row_output_lines;
-				extra_row_output_lines = 0;
-			}
-		}
-		IsPagerNeeded(cont, extra_output_lines, false, &fout, &is_pager);
+		IsPagerNeeded(cont, false, &fout, &is_pager, width_wrap);
 		is_local_pager = is_pager;
 	}
 
@@ -1376,7 +1336,7 @@ print_aligned_vertical(const printTableContent *cont,
 	 */
 	if (!is_pager)
 	{
-		IsPagerNeeded(cont, 0, true, &fout, &is_pager);
+		IsPagerNeeded(cont, true, &fout, &is_pager, NULL);
 		is_local_pager = is_pager;
 	}
 
@@ -3400,17 +3360,67 @@ printTableCleanup(printTableContent *const content)
  * Setup pager if required
  */
 static void
-IsPagerNeeded(const printTableContent *cont, int extra_lines, bool expanded,
-			  FILE **fout, bool *is_pager)
+IsPagerNeeded(const printTableContent *cont, bool expanded,
+			  FILE **fout, bool *is_pager, unsigned int *width_wrap)
 {
 	if (*fout == stdout)
 	{
 		int			lines;
 
+		unsigned int i = 0, cell_count = 0, col_count = 0, extra_row_output_lines = 0, extra_output_lines = 0;
+		const char *const *ptr = NULL;
+
 		if (expanded)
 			lines = (cont->ncolumns + 1) * cont->nrows;
 		else
 			lines = cont->nrows + 1;
+
+		/* scan all column headers, find maximum width and max max_nl_lines */
+		for (i = 0; i < col_count; i++)
+		{
+			int			nl_lines;
+
+			pg_wcssize((const unsigned char *) cont->headers[i], strlen(cont->headers[i]),
+					   cont->opt->encoding, NULL, &nl_lines, NULL);
+			if (nl_lines > extra_row_output_lines)
+				extra_row_output_lines = nl_lines;
+		}
+		/* Add height of tallest header column */
+		extra_output_lines += extra_row_output_lines;
+		extra_row_output_lines = 0;
+
+		/* scan all cells, find maximum width, compute cell_count */
+		for (i = 0, ptr = cont->cells; *ptr; ptr++, cell_count++)
+		{
+			int			width,
+						nl_lines;
+
+			pg_wcssize((const unsigned char *) *ptr, strlen(*ptr), cont->opt->encoding,
+					   &width, &nl_lines, NULL);
+
+			/*
+			 * A row can have both wrapping and newlines that cause it to
+			 * display across multiple lines.  We check for both cases below.
+			 */
+			if (width > 0 && width_wrap[i])
+			{
+				unsigned int extra_lines;
+
+				/* don't count the first line of nl_lines - it's not "extra" */
+				extra_lines = ((width - 1) / width_wrap[i]) + nl_lines - 1;
+				if (extra_lines > extra_row_output_lines)
+					extra_row_output_lines = extra_lines;
+			}
+
+			/* i is the current column number: increment with wrap */
+			if (++i >= col_count)
+			{
+				i = 0;
+				/* At last column of each row, add tallest column height */
+				extra_output_lines += extra_row_output_lines;
+				extra_row_output_lines = 0;
+			}
+		}
 
 		if (!cont->opt->tuples_only)
 		{
@@ -3426,7 +3436,7 @@ IsPagerNeeded(const printTableContent *cont, int extra_lines, bool expanded,
 			}
 		}
 
-		*fout = PageOutput(lines + extra_lines, cont->opt);
+		*fout = PageOutput(lines + extra_output_lines, cont->opt);
 		*is_pager = (*fout != stdout);
 	}
 	else
@@ -3458,7 +3468,7 @@ printTable(const printTableContent *cont,
 		cont->opt->format != PRINT_ALIGNED &&
 		cont->opt->format != PRINT_WRAPPED)
 	{
-		IsPagerNeeded(cont, 0, (cont->opt->expanded == 1), &fout, &is_pager);
+		IsPagerNeeded(cont, (cont->opt->expanded == 1), &fout, &is_pager, NULL);
 		is_local_pager = is_pager;
 	}
 
