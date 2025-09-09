@@ -3394,14 +3394,7 @@ IsPagerNeeded(const printTableContent *cont, unsigned int *width_wrap,
 				   NULL, &nl_lines, NULL);
 
 		header_height[i] = nl_lines;
-
-		if (nl_lines > max_lines)
-			max_lines = nl_lines;
 	}
-
-	/* Add height of tallest header column */
-	lines += max_lines;
-	max_lines = 0;
 
 	/* Scan all cells to count their lines */
 	for (i = 0, cell = cont->cells; *cell; cell++)
@@ -3449,12 +3442,34 @@ IsPagerNeeded(const printTableContent *cont, unsigned int *width_wrap,
 	{
 		printTableFooter *f;
 
-		/*
-		 * FIXME -- this is slightly bogus: it counts the number of
-		 * footers, not the number of lines in them.
-		 */
+		if (cont->title)
+		{
+			pg_wcssize((const unsigned char *) cont->title, strlen(cont->title),
+					   cont->opt->encoding, NULL, &nl_lines, NULL);
+			lines += nl_lines;
+		}
+
+		if (!expanded)
+		{
+			/* Find the tallest header column */
+			for (i = 0; i < cont->ncolumns; i++)
+			{
+				if (header_height[i] > max_lines)
+					max_lines = header_height[i];
+			}
+
+			/* Add height of tallest header column */
+			lines += max_lines;
+			max_lines = 0;
+		}
+
+		/* Count all footer lines */
 		for (f = cont->footers; f; f = f->next)
-			lines++;
+		{
+			pg_wcssize((const unsigned char *) f->data, strlen(f->data),
+					   cont->opt->encoding, NULL, &nl_lines, NULL);
+			lines += nl_lines;
+		}
 	}
 
 	*fout = PageOutput(lines, cont->opt);
