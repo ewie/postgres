@@ -3380,20 +3380,6 @@ IsPagerNeeded(const printTableContent *cont, unsigned int *width_wrap,
 	else
 		lines = cont->nrows + 1;
 
-	/* Scan all column headers to find maximum height */
-	for (i = 0; i < cont->ncolumns; i++)
-	{
-		pg_wcssize((const unsigned char *) cont->headers[i], strlen(cont->headers[i]),
-				   cont->opt->encoding, NULL, &nl_lines, NULL);
-
-		if (nl_lines > max_lines)
-			max_lines = nl_lines;
-	}
-
-	/* Add height of tallest header column */
-	lines += max_lines;
-	max_lines = 0;
-
 	/* Scan all cells to count extra lines */
 	for (i = 0, cell = cont->cells; *cell; cell++)
 	{
@@ -3432,12 +3418,35 @@ IsPagerNeeded(const printTableContent *cont, unsigned int *width_wrap,
 	{
 		printTableFooter *f;
 
-		/*
-		 * FIXME -- this is slightly bogus: it counts the number of
-		 * footers, not the number of lines in them.
-		 */
+		if (cont->title)
+		{
+			pg_wcssize((const unsigned char *) cont->title, strlen(cont->title),
+					   cont->opt->encoding, NULL, &nl_lines, NULL);
+			lines += nl_lines;
+		}
+
+		/* Find the tallest header column */
+		for (i = 0; i < cont->ncolumns; i++)
+		{
+			pg_wcssize((const unsigned char *) cont->headers[i],
+					   strlen(cont->headers[i]), cont->opt->encoding,
+					   NULL, &nl_lines, NULL);
+
+			if (nl_lines > max_lines)
+				max_lines = nl_lines;
+		}
+
+		/* Add height of tallest header column */
+		lines += max_lines;
+		max_lines = 0;
+
+		/* Count all footer lines */
 		for (f = cont->footers; f; f = f->next)
-			lines++;
+		{
+			pg_wcssize((const unsigned char *) f->data, strlen(f->data),
+					   cont->opt->encoding, NULL, &nl_lines, NULL);
+			lines += nl_lines;
+		}
 	}
 
 	*fout = PageOutput(lines, cont->opt);
