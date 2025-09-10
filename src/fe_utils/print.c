@@ -3376,41 +3376,94 @@ IsPagerNeeded(const printTableContent *cont, unsigned int *width_wrap,
 	}
 
 	if (expanded)
-		lines = (cont->ncolumns + 1) * cont->nrows;
-	else
-		lines = cont->nrows + 1;
-
-	/* Scan all cells to count extra lines */
-	for (i = 0, cell = cont->cells; *cell; cell++)
 	{
-		int			width;
-		unsigned int extra_lines;
+		int		   *header_height;
 
-		pg_wcssize((const unsigned char *) *cell, strlen(*cell),
-				   cont->opt->encoding, &width, &nl_lines, NULL);
+		header_height = pg_malloc0(cont->ncolumns * sizeof(header_height));
+
+		/* Count one line per record separator */
+		lines = cont->nrows;
 
 		/*
-		 * A cell can have both wrapping and newlines that cause it to display
-		 * across multiple lines.  We check for both cases below.
+		 * Scan all column headers and cache their line count since expanded
+		 * output repeats the header for every record.
 		 */
-
-		/* Don't count the first line of nl_lines -- it's not "extra" */
-		extra_lines = nl_lines - 1;
-
-		/* Count extra lines due to wrapping */
-		if (width > 0 && width_wrap && width_wrap[i])
-			extra_lines += (width - 1) / width_wrap[i];
-
-		if (extra_lines > row_lines)
-			row_lines = extra_lines;
-
-		/* i is the current column number: increment with wrap */
-		if (++i >= cont->ncolumns)
+		for (i = 0; i < cont->ncolumns; i++)
 		{
-			i = 0;
-			/* At last column of each row, add tallest column height */
-			lines += row_lines;
-			row_lines = 0;
+			pg_wcssize((const unsigned char *) cont->headers[i],
+					   strlen(cont->headers[i]), cont->opt->encoding,
+					   NULL, &nl_lines, NULL);
+			header_height[i] = nl_lines;
+		}
+
+		/* Scan all cells to count their lines */
+		for (i = 0, cell = cont->cells; *cell; cell++)
+		{
+			int			width;
+			unsigned int extra_lines;
+
+			pg_wcssize((const unsigned char *) *cell, strlen(*cell),
+					   cont->opt->encoding, &width, &nl_lines, NULL);
+
+			/*
+			 * A cell can have both wrapping and newlines that cause it to
+			 * display across multiple lines.  We check for both cases below.
+			 */
+
+			extra_lines = nl_lines;
+
+			/* Count extra lines due to wrapping */
+			if (width > 0 && width_wrap && width_wrap[i])
+				extra_lines += (width - 1) / width_wrap[i];
+
+			/* Pick the line count of the header or cell, which ever is larger */
+			if (extra_lines > header_height[i])
+				lines += extra_lines;
+			else
+				lines += header_height[i];
+
+			/* i is the current column number: increment with wrap */
+			if (++i >= cont->ncolumns)
+				i = 0;
+		}
+
+		free(header_height);
+	}
+	else
+	{
+		lines = 1;
+
+		/* Scan all cells to count extra lines */
+		for (i = 0, cell = cont->cells; *cell; cell++)
+		{
+			int			width;
+			unsigned int extra_lines;
+
+			pg_wcssize((const unsigned char *) *cell, strlen(*cell),
+					   cont->opt->encoding, &width, &nl_lines, NULL);
+
+			/*
+			 * A cell can have both wrapping and newlines that cause it to
+			 * display across multiple lines.  We check for both cases below.
+			 */
+
+			extra_lines = nl_lines;
+
+			/* Count extra lines due to wrapping */
+			if (width > 0 && width_wrap && width_wrap[i])
+				extra_lines += (width - 1) / width_wrap[i];
+
+			if (extra_lines > row_lines)
+				row_lines = extra_lines;
+
+			/* i is the current column number: increment with wrap */
+			if (++i >= cont->ncolumns)
+			{
+				i = 0;
+				/* At last column of each row, add tallest column height */
+				lines += row_lines;
+				row_lines = 0;
+			}
 		}
 	}
 
@@ -3425,15 +3478,18 @@ IsPagerNeeded(const printTableContent *cont, unsigned int *width_wrap,
 			lines += nl_lines;
 		}
 
-		/* Scan all column headers to find maximum height */
-		for (i = 0; i < cont->ncolumns; i++)
+		if (!expanded)
 		{
-			pg_wcssize((const unsigned char *) cont->headers[i],
-					   strlen(cont->headers[i]), cont->opt->encoding,
-					   NULL, &nl_lines, NULL);
+			/* Scan all column headers to find maximum height */
+			for (i = 0; i < cont->ncolumns; i++)
+			{
+				pg_wcssize((const unsigned char *) cont->headers[i],
+						   strlen(cont->headers[i]), cont->opt->encoding,
+						   NULL, &nl_lines, NULL);
 
-			if (nl_lines > row_lines)
-				row_lines = nl_lines;
+				if (nl_lines > row_lines)
+					row_lines = nl_lines;
+			}
 		}
 
 		/* Add height of tallest header column */
