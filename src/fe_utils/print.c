@@ -3366,6 +3366,7 @@ IsPagerNeeded(const printTableContent *cont, unsigned int *width_wrap,
 	int			lines,
 				max_lines = 0,
 				nl_lines,
+			   *header_height = NULL,
 				i;
 	const char *const *cell = NULL;
 
@@ -3375,17 +3376,24 @@ IsPagerNeeded(const printTableContent *cont, unsigned int *width_wrap,
 		return;
 	}
 
-	if (expanded)
-		lines = (cont->ncolumns + 1) * cont->nrows;
-	else
-		lines = cont->nrows + 1;
+	/*
+	 * Count one line per record separator in expanded mode.  In normal mode,
+	 * we write a single separator line between header and rows.
+	 */
+	lines = expanded ? cont->nrows : 1;
 
-	/* Scan all column headers to find maximum height */
+	/*
+	 * Scan all column headers and cache their line count since expanded
+	 * output repeats the header for every record.
+	 */
+	header_height = pg_malloc0(cont->ncolumns * sizeof(header_height));
 	for (i = 0; i < cont->ncolumns; i++)
 	{
 		pg_wcssize((const unsigned char *) cont->headers[i],
 				   strlen(cont->headers[i]), cont->opt->encoding,
 				   NULL, &nl_lines, NULL);
+
+		header_height[i] = nl_lines;
 
 		if (nl_lines > max_lines)
 			max_lines = nl_lines;
@@ -3395,37 +3403,45 @@ IsPagerNeeded(const printTableContent *cont, unsigned int *width_wrap,
 	lines += max_lines;
 	max_lines = 0;
 
-	/* Scan all cells to count extra lines */
+	/* Scan all cells to count their lines */
 	for (i = 0, cell = cont->cells; *cell; cell++)
 	{
 		int			width;
-		unsigned int extra_lines;
 
+		/* Count the original line breaks */
 		pg_wcssize((const unsigned char *) *cell, strlen(*cell),
 				   cont->opt->encoding, &width, &nl_lines, NULL);
 
-		/*
-		 * A cell can have both wrapping and newlines that cause it to display
-		 * across multiple lines.  We check for both cases below.
-		 */
-
-		/* Don't count the first line of nl_lines -- it's not "extra" */
-		extra_lines = nl_lines - 1;
-
 		/* Count extra lines due to wrapping */
 		if (width > 0 && width_wrap && width_wrap[i])
-			extra_lines += (width - 1) / width_wrap[i];
+			nl_lines += (width - 1) / width_wrap[i];
 
-		if (extra_lines > max_lines)
-			max_lines = extra_lines;
+		if (expanded)
+		{
+			/* Pick the height of the header or cell, whichever is taller */
+			if (nl_lines > header_height[i])
+				lines += nl_lines;
+			else
+				lines += header_height[i];
+		}
+		else
+		{
+			/* Remember max line count in the current row */
+			if (nl_lines > max_lines)
+				max_lines = nl_lines;
+		}
 
 		/* i is the current column number: increment with wrap */
 		if (++i >= cont->ncolumns)
 		{
 			i = 0;
-			/* At last column of each row, add tallest column height */
-			lines += max_lines;
-			max_lines = 0;
+
+			if (!expanded)
+			{
+				/* At last column of each row, add tallest column height */
+				lines += max_lines;
+				max_lines = 0;
+			}
 		}
 	}
 
@@ -3443,6 +3459,8 @@ IsPagerNeeded(const printTableContent *cont, unsigned int *width_wrap,
 
 	*fout = PageOutput(lines, cont->opt);
 	*is_pager = (*fout != stdout);
+
+	free(header_height);
 }
 
 /*
