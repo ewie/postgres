@@ -709,7 +709,7 @@ CREATE FUNCTION foo(int, int default 42) ...
    Add two integers using an SQL function:
 <programlisting>
 CREATE FUNCTION add(integer, integer) RETURNS integer
-    AS 'select $1 + $2;'
+    AS 'SELECT $1 + $2;'
     LANGUAGE SQL
     IMMUTABLE
     RETURNS NULL ON NULL INPUT;

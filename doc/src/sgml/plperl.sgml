@@ -229,7 +229,7 @@ $$ LANGUAGE plperl;
    references to Perl arrays.  Here is an example:
 
 <programlisting>
-CREATE OR REPLACE function returns_array()
+CREATE OR REPLACE FUNCTION returns_array()
 RETURNS text[][] AS $$
     return [['a&quot;b','c,d'],['e\\f','g']];
 $$ LANGUAGE plperl;
@@ -588,7 +588,7 @@ CREATE OR REPLACE FUNCTION lotsa_md5 (INTEGER) RETURNS SETOF foo_type AS $$
     return;
 $$ LANGUAGE plperlu;
 
-SELECT * from lotsa_md5(500);
+SELECT * FROM lotsa_md5(500);
 </programlisting>
     </para>
 
