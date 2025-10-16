@@ -2331,7 +2331,7 @@ SELECT ARRAY[[1,2],[3,4]];
     an array of the proper kind, not only a sub-<literal>ARRAY</literal> construct.
     For example:
 <programlisting>
-CREATE TABLE arr(f1 int[], f2 int[]);
+CREATE TABLE arr (f1 int[], f2 int[]);
 
 INSERT INTO arr VALUES (ARRAY[[1,2],[3,4]], ARRAY[[5,6],[7,8]]);
 
@@ -2457,7 +2457,7 @@ SELECT ROW(t.f1, t.f2, 42) FROM t;
     created with <command>CREATE TYPE AS</command>.  An explicit cast might be needed
     to avoid ambiguity.  For example:
 <programlisting>
-CREATE TABLE mytable(f1 int, f2 float, f3 text);
+CREATE TABLE mytable (f1 int, f2 float, f3 text);
 
 CREATE FUNCTION getf1(mytable) RETURNS int AS 'SELECT $1.f1' LANGUAGE SQL;
 

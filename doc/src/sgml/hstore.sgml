@@ -799,7 +799,7 @@ UPDATE tab SET h = h || hstore('c', '3');
    If multiple keys are to be added or changed in one operation,
    the concatenation approach is more efficient than subscripting:
 <programlisting>
-UPDATE tab SET h = h || hstore(array['q', 'w'], array['11', '12']);
+UPDATE tab SET h = h || hstore(ARRAY['q', 'w'], ARRAY['11', '12']);
 </programlisting>
   </para>
 

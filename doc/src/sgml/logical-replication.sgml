@@ -365,17 +365,17 @@
     <para>
      Create some test tables on the publisher.
 <programlisting>
-/* pub # */ CREATE TABLE t1(a int, b text, PRIMARY KEY(a));
-/* pub # */ CREATE TABLE t2(c int, d text, PRIMARY KEY(c));
-/* pub # */ CREATE TABLE t3(e int, f text, PRIMARY KEY(e));
+/* pub # */ CREATE TABLE t1 (a int, b text, PRIMARY KEY (a));
+/* pub # */ CREATE TABLE t2 (c int, d text, PRIMARY KEY (c));
+/* pub # */ CREATE TABLE t3 (e int, f text, PRIMARY KEY (e));
 </programlisting></para>
 
     <para>
      Create the same tables on the subscriber.
 <programlisting>
-/* sub # */ CREATE TABLE t1(a int, b text, PRIMARY KEY(a));
-/* sub # */ CREATE TABLE t2(c int, d text, PRIMARY KEY(c));
-/* sub # */ CREATE TABLE t3(e int, f text, PRIMARY KEY(e));
+/* sub # */ CREATE TABLE t1 (a int, b text, PRIMARY KEY (a));
+/* sub # */ CREATE TABLE t2 (c int, d text, PRIMARY KEY (c));
+/* sub # */ CREATE TABLE t3 (e int, f text, PRIMARY KEY (e));
 </programlisting></para>
 
     <para>
@@ -1028,9 +1028,9 @@ HINT:  To initiate replication, you must manually create the replication slot, e
    <para>
     Create some tables to be used in the following examples.
 <programlisting>
-/* pub # */ CREATE TABLE t1(a int, b int, c text, PRIMARY KEY(a,c));
-/* pub # */ CREATE TABLE t2(d int, e int, f int, PRIMARY KEY(d));
-/* pub # */ CREATE TABLE t3(g int, h int, i int, PRIMARY KEY(g));
+/* pub # */ CREATE TABLE t1 (a int, b int, c text, PRIMARY KEY (a,c));
+/* pub # */ CREATE TABLE t2 (d int, e int, f int, PRIMARY KEY (d));
+/* pub # */ CREATE TABLE t3 (g int, h int, i int, PRIMARY KEY (g));
 </programlisting></para>
 
    <para>
@@ -1125,7 +1125,7 @@ Publications:
     definition as the one on the publisher, and also create the subscription
     <literal>s1</literal> that subscribes to the publication <literal>p1</literal>.
 <programlisting>
-/* sub # */ CREATE TABLE t1(a int, b int, c text, PRIMARY KEY(a,c));
+/* sub # */ CREATE TABLE t1 (a int, b int, c text, PRIMARY KEY (a,c));
 /* sub # */ CREATE SUBSCRIPTION s1
 /* sub - */ CONNECTION 'host=localhost dbname=test_pub application_name=s1'
 /* sub - */ PUBLICATION p1;
@@ -1269,12 +1269,12 @@ Publications:
    <para>
     Create a partitioned table on the publisher.
 <programlisting>
-/* pub # */ CREATE TABLE parent(a int PRIMARY KEY) PARTITION BY RANGE(a);
+/* pub # */ CREATE TABLE parent (a int PRIMARY KEY) PARTITION BY RANGE (a);
 /* pub # */ CREATE TABLE child PARTITION OF parent DEFAULT;
 </programlisting>
    Create the same tables on the subscriber.
 <programlisting>
-/* sub # */ CREATE TABLE parent(a int PRIMARY KEY) PARTITION BY RANGE(a);
+/* sub # */ CREATE TABLE parent (a int PRIMARY KEY) PARTITION BY RANGE (a);
 /* sub # */ CREATE TABLE child PARTITION OF parent DEFAULT;
 </programlisting></para>
 
@@ -1476,7 +1476,7 @@ Publications:
    <para>
     Create a table <literal>t1</literal> to be used in the following example.
 <programlisting>
-/* pub # */ CREATE TABLE t1(id int, a text, b text, c text, d text, e text, PRIMARY KEY(id));
+/* pub # */ CREATE TABLE t1 (id int, a text, b text, c text, d text, e text, PRIMARY KEY (id));
 </programlisting></para>
 
    <para>
@@ -1528,7 +1528,7 @@ Publications:
      <literal>s1</literal> that subscribes to the publication
      <literal>p1</literal>.
 <programlisting>
-/* sub # */ CREATE TABLE t1(id int, b text, a text, d text, PRIMARY KEY(id));
+/* sub # */ CREATE TABLE t1 (id int, b text, a text, d text, PRIMARY KEY (id));
 /* sub # */ CREATE SUBSCRIPTION s1
 /* sub - */ CONNECTION 'host=localhost dbname=test_pub application_name=s1'
 /* sub - */ PUBLICATION p1;
@@ -1537,9 +1537,9 @@ Publications:
     <para>
      On the publisher node, insert some rows to table <literal>t1</literal>.
 <programlisting>
-/* pub # */ INSERT INTO t1 VALUES(1, 'a-1', 'b-1', 'c-1', 'd-1', 'e-1');
-/* pub # */ INSERT INTO t1 VALUES(2, 'a-2', 'b-2', 'c-2', 'd-2', 'e-2');
-/* pub # */ INSERT INTO t1 VALUES(3, 'a-3', 'b-3', 'c-3', 'd-3', 'e-3');
+/* pub # */ INSERT INTO t1 VALUES (1, 'a-1', 'b-1', 'c-1', 'd-1', 'e-1');
+/* pub # */ INSERT INTO t1 VALUES (2, 'a-2', 'b-2', 'c-2', 'd-2', 'e-2');
+/* pub # */ INSERT INTO t1 VALUES (3, 'a-3', 'b-3', 'c-3', 'd-3', 'e-3');
 /* pub # */ SELECT * FROM t1 ORDER BY id;
  id |  a  |  b  |  c  |  d  |  e
 ----+-----+-----+-----+-----+-----
@@ -1594,7 +1594,7 @@ Publications:
 
 /* sub # */ CREATE TABLE tab_gen_to_gen (a int, b int GENERATED ALWAYS AS (a * 100) STORED);
 /* sub # */ CREATE SUBSCRIPTION sub1 CONNECTION 'dbname=test_pub' PUBLICATION pub1;
-/* sub # */ SELECT * from tab_gen_to_gen;
+/* sub # */ SELECT * FROM tab_gen_to_gen;
  a | b
 ---+----
  1 | 100

@@ -1991,7 +1991,7 @@ EXEC SQL EXECUTE IMMEDIATE :stmt;
     example:
 <programlisting>
 EXEC SQL BEGIN DECLARE SECTION;
-const char *stmt = "INSERT INTO test1 VALUES(?, ?);";
+const char *stmt = "INSERT INTO test1 VALUES (?, ?);";
 EXEC SQL END DECLARE SECTION;
 
 EXEC SQL PREPARE mystmt FROM :stmt;
