@@ -217,7 +217,7 @@ EXPLAIN EXECUTE <replaceable>name</replaceable>(<replaceable>parameter_values</r
    statement, and then execute it:
 <programlisting>
 PREPARE fooplan (int, text, bool, numeric) AS
-    INSERT INTO foo VALUES($1, $2, $3, $4);
+    INSERT INTO foo VALUES ($1, $2, $3, $4);
 EXECUTE fooplan(1, 'Hunter Valley', 't', 200.00);
 </programlisting>
   </para>

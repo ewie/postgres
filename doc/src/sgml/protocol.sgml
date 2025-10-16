@@ -783,9 +783,9 @@
      transaction, unless explicit transaction control commands are included
      to force a different behavior.  For example, if the message contains
 <programlisting>
-INSERT INTO mytable VALUES(1);
+INSERT INTO mytable VALUES (1);
 SELECT 1/0;
-INSERT INTO mytable VALUES(2);
+INSERT INTO mytable VALUES (2);
 </programlisting>
      then the divide-by-zero failure in the <command>SELECT</command> will force
      rollback of the first <command>INSERT</command>.  Furthermore, because
@@ -797,9 +797,9 @@ INSERT INTO mytable VALUES(2);
      If instead the message contains
 <programlisting>
 BEGIN;
-INSERT INTO mytable VALUES(1);
+INSERT INTO mytable VALUES (1);
 COMMIT;
-INSERT INTO mytable VALUES(2);
+INSERT INTO mytable VALUES (2);
 SELECT 1/0;
 </programlisting>
      then the first <command>INSERT</command> is committed by the
@@ -881,9 +881,9 @@ ROLLBACK;
      example into
 <programlisting>
 BEGIN;
-INSERT INTO mytable VALUES(1);
+INSERT INTO mytable VALUES (1);
 COMMIT;
-INSERT INTO mytable VALUES(2);
+INSERT INTO mytable VALUES (2);
 SELCT 1/0;<!-- this typo is intentional -->
 </programlisting>
      then none of the statements would get run, resulting in the visible

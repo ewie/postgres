@@ -58,10 +58,10 @@
    usually sits between two indexed tables, for example:
 
 <programlisting>
-CREATE TABLE left_table  (id INT PRIMARY KEY, ...);
-CREATE TABLE right_table (id INT PRIMARY KEY, ...);
-CREATE TABLE many_to_many(id_left  INT REFERENCES left_table,
-                          id_right INT REFERENCES right_table);
+CREATE TABLE left_table   (id INT PRIMARY KEY, ...);
+CREATE TABLE right_table  (id INT PRIMARY KEY, ...);
+CREATE TABLE many_to_many (id_left  INT REFERENCES left_table,
+                           id_right INT REFERENCES right_table);
 </programlisting>
 
   It is typically used like this:

@@ -70,7 +70,7 @@ EXISTS (<replaceable>subquery</replaceable>)
    and not on the contents of those rows, the output list of the
    subquery is normally unimportant.  A common coding convention is
    to write all <literal>EXISTS</literal> tests in the form
-   <literal>EXISTS(SELECT 1 WHERE ...)</literal>.  There are exceptions to
+   <literal>EXISTS (SELECT 1 WHERE ...)</literal>.  There are exceptions to
    this rule however, such as subqueries that use <token>INTERSECT</token>.
   </para>
 

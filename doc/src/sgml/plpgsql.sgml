@@ -555,7 +555,7 @@ CALL sum_n_product(2, 4, NULL, NULL);
 
 <programlisting>
 CREATE FUNCTION extended_sales(p_itemno int)
-RETURNS TABLE(quantity int, total numeric) AS $$
+RETURNS TABLE (quantity int, total numeric) AS $$
 BEGIN
     RETURN QUERY SELECT s.quantity, s.quantity * s.price FROM sales AS s
                  WHERE s.itemno = p_itemno;
@@ -1023,7 +1023,7 @@ IF count(*) &gt; 0 FROM my_table THEN ...
 tax := subtotal * 0.06;
 my_record.user_id := 20;
 my_array[j] := 20;
-my_array[1:3] := array[1,2,3];
+my_array[1:3] := ARRAY[1, 2, 3];
 complex_array[n].realpart = 12.3;
 </programlisting>
     </para>
@@ -1037,8 +1037,8 @@ complex_array[n].realpart = 12.3;
      within a <application>PL/pgSQL</application> function just by writing
      the command.  For example, you could create and fill a table by writing
 <programlisting>
-CREATE TABLE mytable (id int primary key, data text);
-INSERT INTO mytable VALUES (1,'one'), (2,'two');
+CREATE TABLE mytable (id int PRIMARY KEY, data text);
+INSERT INTO mytable VALUES (1, 'one'), (2, 'two');
 </programlisting>
     </para>
 
@@ -2861,7 +2861,7 @@ WHEN SQLSTATE '22012' THEN ...
      As an example, consider this fragment:
 
 <programlisting>
-INSERT INTO mytab(firstname, lastname) VALUES('Tom', 'Jones');
+INSERT INTO mytab (firstname, lastname) VALUES ('Tom', 'Jones');
 BEGIN
     UPDATE mytab SET firstname = 'Joe' WHERE lastname = 'Jones';
     x := x + 1;
@@ -2905,7 +2905,7 @@ END;
 <programlisting>
 CREATE TABLE db (a INT PRIMARY KEY, b TEXT);
 
-CREATE FUNCTION merge_db(key INT, data TEXT) RETURNS VOID AS
+CREATE FUNCTION merge_db(key INT, data TEXT) RETURNS void AS
 $$
 BEGIN
     LOOP
@@ -2918,7 +2918,7 @@ BEGIN
         -- if someone else inserts the same key concurrently,
         -- we could get a unique-key failure
         BEGIN
-            INSERT INTO db(a,b) VALUES (key, data);
+            INSERT INTO db (a, b) VALUES (key, data);
             RETURN;
         EXCEPTION WHEN unique_violation THEN
             -- Do nothing, and loop to try the UPDATE again.
@@ -4381,7 +4381,7 @@ CREATE TABLE emp (
     salary            integer
 );
 
-CREATE TABLE emp_audit(
+CREATE TABLE emp_audit (
     operation         char(1)   NOT NULL,
     stamp             timestamp NOT NULL,
     userid            text      NOT NULL,
@@ -4439,7 +4439,7 @@ CREATE TABLE emp (
     salary            integer
 );
 
-CREATE TABLE emp_audit(
+CREATE TABLE emp_audit (
     operation         char(1)   NOT NULL,
     userid            text      NOT NULL,
     empname           text      NOT NULL,
@@ -4466,20 +4466,20 @@ CREATE OR REPLACE FUNCTION update_emp_view() RETURNS TRIGGER AS $$
             IF NOT FOUND THEN RETURN NULL; END IF;
 
             OLD.last_updated = now();
-            INSERT INTO emp_audit VALUES('D', current_user, OLD.*);
+            INSERT INTO emp_audit VALUES ('D', current_user, OLD.*);
             RETURN OLD;
         ELSIF (TG_OP = 'UPDATE') THEN
             UPDATE emp SET salary = NEW.salary WHERE empname = OLD.empname;
             IF NOT FOUND THEN RETURN NULL; END IF;
 
             NEW.last_updated = now();
-            INSERT INTO emp_audit VALUES('U', current_user, NEW.*);
+            INSERT INTO emp_audit VALUES ('U', current_user, NEW.*);
             RETURN NEW;
         ELSIF (TG_OP = 'INSERT') THEN
-            INSERT INTO emp VALUES(NEW.empname, NEW.salary);
+            INSERT INTO emp VALUES (NEW.empname, NEW.salary);
 
             NEW.last_updated = now();
-            INSERT INTO emp_audit VALUES('I', current_user, NEW.*);
+            INSERT INTO emp_audit VALUES ('I', current_user, NEW.*);
             RETURN NEW;
         END IF;
     END;
@@ -4634,10 +4634,10 @@ CREATE TRIGGER maint_sales_summary_bytime
 AFTER INSERT OR UPDATE OR DELETE ON sales_fact
     FOR EACH ROW EXECUTE FUNCTION maint_sales_summary_bytime();
 
-INSERT INTO sales_fact VALUES(1,1,1,10,3,15);
-INSERT INTO sales_fact VALUES(1,2,1,20,5,35);
-INSERT INTO sales_fact VALUES(2,2,1,40,15,135);
-INSERT INTO sales_fact VALUES(2,3,1,10,1,13);
+INSERT INTO sales_fact VALUES (1, 1, 1, 10,  3,  15);
+INSERT INTO sales_fact VALUES (1, 2, 1, 20,  5,  35);
+INSERT INTO sales_fact VALUES (2, 2, 1, 40, 15, 135);
+INSERT INTO sales_fact VALUES (2, 3, 1, 10,  1,  13);
 SELECT * FROM sales_summary_bytime;
 DELETE FROM sales_fact WHERE product_key = 1;
 SELECT * FROM sales_summary_bytime;
@@ -4678,7 +4678,7 @@ CREATE TABLE emp (
     salary            integer
 );
 
-CREATE TABLE emp_audit(
+CREATE TABLE emp_audit (
     operation         char(1)   NOT NULL,
     stamp             timestamp NOT NULL,
     userid            text      NOT NULL,
@@ -5226,12 +5226,12 @@ CREATE FUNCTION foo() RETURNS integer AS '
       For string literals inside the function body, for example:
 <programlisting>
 a_output := ''Blah'';
-SELECT * FROM users WHERE f_name=''foobar'';
+SELECT * FROM users WHERE f_name = ''foobar'';
 </programlisting>
       In the dollar-quoting approach, you'd just write:
 <programlisting>
 a_output := 'Blah';
-SELECT * FROM users WHERE f_name='foobar';
+SELECT * FROM users WHERE f_name = 'foobar';
 </programlisting>
       which is exactly what the <application>PL/pgSQL</application> parser would see
       in either case.
@@ -5294,24 +5294,24 @@ a_output := a_output || $$ AND name LIKE 'foobar'$$
       <xref linkend="plpgsql-porting-ex2"/>.
       For example:
 <programlisting>
-a_output := a_output || '' if v_'' ||
-    referrer_keys.kind || '' like ''''''''''
+a_output := a_output || '' IF v_'' ||
+    referrer_keys.kind || '' LIKE ''''''''''
     || referrer_keys.key_string || ''''''''''
-    then return ''''''  || referrer_keys.referrer_type
-    || ''''''; end if;'';
+    THEN RETURN '''''' || referrer_keys.referrer_type
+    || ''''''; END IF;'';
 </programlisting>
       The value of <literal>a_output</literal> would then be:
 <programlisting>
-if v_... like ''...'' then return ''...''; end if;
+IF v_... LIKE ''...'' THEN RETURN ''...''; END IF;
 </programlisting>
      </para>
      <para>
       In the dollar-quoting approach, this becomes:
 <programlisting>
-a_output := a_output || $$ if v_$$ || referrer_keys.kind || $$ like '$$
+a_output := a_output || $$ IF v_$$ || referrer_keys.kind || $$ LIKE '$$
     || referrer_keys.key_string || $$'
-    then return '$$  || referrer_keys.referrer_type
-    || $$'; end if;$$;
+    THEN RETURN '$$ || referrer_keys.referrer_type
+    || $$'; END IF;$$;
 </programlisting>
       where we assume we only need to put single quote marks into
       <literal>a_output</literal>, because it will be re-quoted before use.
@@ -5887,7 +5887,7 @@ BEGIN
     END IF;
 
     DELETE FROM cs_active_job;
-    INSERT INTO cs_active_job(job_id) VALUES (v_job_id);
+    INSERT INTO cs_active_job (job_id) VALUES (v_job_id);
 
     BEGIN
         INSERT INTO cs_jobs (job_id, start_stamp) VALUES (v_job_id, now());
@@ -5919,7 +5919,7 @@ BEGIN
     END IF;
 
     DELETE FROM cs_active_job;
-    INSERT INTO cs_active_job(job_id) VALUES (v_job_id);
+    INSERT INTO cs_active_job (job_id) VALUES (v_job_id);
 
     BEGIN
         INSERT INTO cs_jobs (job_id, start_stamp) VALUES (v_job_id, now());

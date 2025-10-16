@@ -388,7 +388,7 @@ CREATE EVENT TRIGGER noddl ON ddl_command_start
  noddl | ddl_command_start | dim   | enabled | noddl    |
 (1 row)
 
-=# CREATE TABLE foo(id serial);
+=# CREATE TABLE foo (id serial);
 ERROR:  command "CREATE TABLE" denied
 </screen>
    </para>
@@ -433,7 +433,7 @@ $$
 ---
 DECLARE
   table_oid oid := pg_event_trigger_table_rewrite_oid();
-  current_hour integer := extract('hour' from current_time);
+  current_hour integer := extract('hour' FROM current_time);
   pages integer;
   max_pages integer := 100;
 BEGIN

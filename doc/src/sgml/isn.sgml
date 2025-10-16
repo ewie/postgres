@@ -379,20 +379,20 @@ SELECT ean13(upc('220356483481'));
 
 --Create a table with a single column to hold ISBN numbers:
 CREATE TABLE test (id isbn);
-INSERT INTO test VALUES('9780393040029');
+INSERT INTO test VALUES ('9780393040029');
 
 --Automatically calculate check digits (observe the '?'):
-INSERT INTO test VALUES('220500896?');
-INSERT INTO test VALUES('978055215372?');
+INSERT INTO test VALUES ('220500896?');
+INSERT INTO test VALUES ('978055215372?');
 
 SELECT issn('3251231?');
 SELECT ismn('979047213542?');
 
 --Using the weak mode:
 SET isn.weak TO true;
-INSERT INTO test VALUES('978-0-11-000533-4');
-INSERT INTO test VALUES('9780141219307');
-INSERT INTO test VALUES('2-205-00876-X');
+INSERT INTO test VALUES ('978-0-11-000533-4');
+INSERT INTO test VALUES ('9780141219307');
+INSERT INTO test VALUES ('2-205-00876-X');
 SET isn.weak TO false;
 
 SELECT id FROM test WHERE NOT is_valid(id);

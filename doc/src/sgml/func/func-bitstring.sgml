@@ -348,7 +348,7 @@
 <programlisting>
 44::bit(10)                    <lineannotation>0000101100</lineannotation>
 44::bit(3)                     <lineannotation>100</lineannotation>
-cast(-44 as bit(12))           <lineannotation>111111010100</lineannotation>
+cast(-44 AS bit(12))           <lineannotation>111111010100</lineannotation>
 '1110'::bit(4)::integer        <lineannotation>14</lineannotation>
 </programlisting>
     Note that casting to just <quote>bit</quote> means casting to
