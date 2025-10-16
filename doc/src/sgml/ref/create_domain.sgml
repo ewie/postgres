@@ -256,7 +256,7 @@ INSERT INTO tab (domcol) VALUES ((SELECT domcol FROM tab WHERE false));
 
 <programlisting>
 CREATE DOMAIN us_postal_code AS TEXT
-CHECK(
+CHECK (
    VALUE ~ '^\d{5}$'
 OR VALUE ~ '^\d{5}-\d{4}$'
 );

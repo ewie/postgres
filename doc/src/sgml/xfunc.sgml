@@ -167,7 +167,7 @@
     Alternatively, an SQL function can be declared to return a set (that is,
     multiple rows) by specifying the function's return type as <literal>SETOF
     <replaceable>sometype</replaceable></literal>, or equivalently by declaring it as
-    <literal>RETURNS TABLE(<replaceable>columns</replaceable>)</literal>.  In this case
+    <literal>RETURNS TABLE (<replaceable>columns</replaceable>)</literal>.  In this case
     all rows of the last query's result are returned.  Further details appear
     below.
    </para>
@@ -378,7 +378,7 @@ SELECT add_em(1, 2) AS answer;
      bank account:
 
 <programlisting>
-CREATE FUNCTION tf1 (accountno integer, debit numeric) RETURNS numeric AS $$
+CREATE FUNCTION tf1(accountno integer, debit numeric) RETURNS numeric AS $$
     UPDATE bank
         SET balance = balance - debit
         WHERE accountno = tf1.accountno;
@@ -409,7 +409,7 @@ SELECT tf1(17, 100.0);
      is:
 
 <programlisting>
-CREATE FUNCTION tf1 (accountno integer, debit numeric) RETURNS numeric AS $$
+CREATE FUNCTION tf1(accountno integer, debit numeric) RETURNS numeric AS $$
     UPDATE bank
         SET balance = balance - debit
         WHERE accountno = tf1.accountno;
@@ -421,7 +421,7 @@ $$ LANGUAGE SQL;
      The same thing could be done in one command using <literal>RETURNING</literal>:
 
 <programlisting>
-CREATE FUNCTION tf1 (accountno integer, debit numeric) RETURNS numeric AS $$
+CREATE FUNCTION tf1(accountno integer, debit numeric) RETURNS numeric AS $$
     UPDATE bank
         SET balance = balance - debit
         WHERE accountno = tf1.accountno
@@ -683,7 +683,7 @@ SELECT getname(new_emp());
      with <firstterm>output parameters</firstterm>, as in this example:
 
 <screen>
-CREATE FUNCTION add_em (IN x int, IN y int, OUT sum int)
+CREATE FUNCTION add_em(IN x int, IN y int, OUT sum int)
 AS 'SELECT x + y'
 LANGUAGE SQL;
 
@@ -700,7 +700,7 @@ SELECT add_em(3,7);
      functions that return several columns.  For example,
 
 <screen>
-CREATE FUNCTION sum_n_product (x int, y int, OUT sum int, OUT product int)
+CREATE FUNCTION sum_n_product(x int, y int, OUT sum int, OUT product int)
 AS 'SELECT x + y, x * y'
 LANGUAGE SQL;
 
@@ -718,7 +718,7 @@ LANGUAGE SQL;
 <screen>
 CREATE TYPE sum_prod AS (sum int, product int);
 
-CREATE FUNCTION sum_n_product (int, int) RETURNS sum_prod
+CREATE FUNCTION sum_n_product(int, int) RETURNS sum_prod
 AS 'SELECT $1 + $2, $1 * $2'
 LANGUAGE SQL;
 </screen>
@@ -771,7 +771,7 @@ DROP FUNCTION sum_n_product (int, int);
      For example, the bank account debiting routine from earlier could be
      written like this:
 <programlisting>
-CREATE PROCEDURE tp1 (accountno integer, debit numeric, OUT new_balance numeric) AS $$
+CREATE PROCEDURE tp1(accountno integer, debit numeric, OUT new_balance numeric) AS $$
     UPDATE bank
         SET balance = balance - debit
         WHERE accountno = tp1.accountno
@@ -1044,7 +1044,7 @@ SELECT * FROM getfoo(1) AS t1;
 CREATE TABLE tab (y int, z int);
 INSERT INTO tab VALUES (1, 2), (3, 4), (5, 6), (7, 8);
 
-CREATE FUNCTION sum_n_product_with_tab (x int, OUT sum int, OUT product int)
+CREATE FUNCTION sum_n_product_with_tab(x int, OUT sum int, OUT product int)
 RETURNS SETOF record
 AS $$
     SELECT $1 + tab.y, $1 * tab.y FROM tab;
@@ -1177,7 +1177,7 @@ SELECT x, g FROM tab, LATERAL generate_series(1,5) AS g;
     <para>
      If there is more than one set-returning function in the query's select
      list, the behavior is similar to what you get from putting the functions
-     into a single <literal>LATERAL ROWS FROM( ... )</literal> <literal>FROM</literal>-clause
+     into a single <literal>LATERAL ROWS FROM ( ... )</literal> <literal>FROM</literal>-clause
      item.  For each row from the underlying query, there is an output row
      using the first result from each function, then an output row using the
      second result, and so on.  If some of the set-returning functions
@@ -1193,7 +1193,7 @@ SELECT x, g FROM tab, LATERAL generate_series(1,5) AS g;
      Set-returning functions can be nested in a select list, although that is
      not allowed in <literal>FROM</literal>-clause items.  In such cases, each level
      of nesting is treated separately, as though it were
-     a separate <literal>LATERAL ROWS FROM( ... )</literal> item.  For example, in
+     a separate <literal>LATERAL ROWS FROM ( ... )</literal> item.  For example, in
 <programlisting>
 SELECT srf1(srf2(x), srf3(y)), srf4(srf5(z)) FROM tab;
 </programlisting>
@@ -1286,7 +1286,7 @@ SELECT x, case_generate_series(y &gt; 0, 1, z, 5) FROM tab;
     <para>
      There is another way to declare a function as returning a set,
      which is to use the syntax
-     <literal>RETURNS TABLE(<replaceable>columns</replaceable>)</literal>.
+     <literal>RETURNS TABLE (<replaceable>columns</replaceable>)</literal>.
      This is equivalent to using one or more <literal>OUT</literal> parameters plus
      marking the function as returning <literal>SETOF record</literal> (or
      <literal>SETOF</literal> a single output parameter's type, as appropriate).
@@ -1299,8 +1299,8 @@ SELECT x, case_generate_series(y &gt; 0, 1, z, 5) FROM tab;
      done this way:
 
 <programlisting>
-CREATE FUNCTION sum_n_product_with_tab (x int)
-RETURNS TABLE(sum int, product int) AS $$
+CREATE FUNCTION sum_n_product_with_tab(x int)
+RETURNS TABLE (sum int, product int) AS $$
     SELECT $1 + tab.y, $1 * tab.y FROM tab;
 $$ LANGUAGE SQL;
 </programlisting>
@@ -1408,7 +1408,7 @@ DETAIL:  A result of type anyelement requires at least one input of type anyelem
      Polymorphism can be used with functions that have output arguments.
      For example:
 <screen>
-CREATE FUNCTION dup (f1 anyelement, OUT f2 anyelement, OUT f3 anyarray)
+CREATE FUNCTION dup(f1 anyelement, OUT f2 anyelement, OUT f3 anyarray)
 AS 'select $1, array[$1,$1]' LANGUAGE SQL;
 
 SELECT * FROM dup(22);
@@ -1423,7 +1423,7 @@ SELECT * FROM dup(22);
      Polymorphism can also be used with variadic functions.
      For example:
 <screen>
-CREATE FUNCTION anyleast (VARIADIC anyarray) RETURNS anyelement AS $$
+CREATE FUNCTION anyleast(VARIADIC anyarray) RETURNS anyelement AS $$
     SELECT min($1[i]) FROM generate_subscripts($1, 1) g(i);
 $$ LANGUAGE SQL;
 
@@ -1486,7 +1486,7 @@ SELECT anyleast('abc'::text, 'ABC' COLLATE "C");
      This version of <function>anyleast</function> would always use <literal>en_US</literal>
      locale to compare strings:
 <programlisting>
-CREATE FUNCTION anyleast (VARIADIC anyarray) RETURNS anyelement AS $$
+CREATE FUNCTION anyleast(VARIADIC anyarray) RETURNS anyelement AS $$
     SELECT min($1[i] COLLATE "en_US") FROM generate_subscripts($1, 1) g(i);
 $$ LANGUAGE SQL;
 </programlisting>

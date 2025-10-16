@@ -281,7 +281,7 @@ key =&gt; NULL
         with matching values from <type>hstore</type>.
        </para>
        <para>
-        <literal>ROW(1,3) #= 'f1=>11'::hstore</literal>
+        <literal>ROW(1, 3) #= 'f1=>11'::hstore</literal>
         <returnvalue>(11,3)</returnvalue>
        </para></entry>
       </row>
@@ -346,7 +346,7 @@ key =&gt; NULL
         Constructs an <type>hstore</type> from a record or row.
        </para>
        <para>
-        <literal>hstore(ROW(1,2))</literal>
+        <literal>hstore(ROW(1, 2))</literal>
         <returnvalue>"f1"=&gt;"1", "f2"=&gt;"2"</returnvalue>
        </para></entry>
       </row>
@@ -696,7 +696,7 @@ b
         with matching values from <type>hstore</type>.
        </para>
        <para>
-        <literal>populate_record(ROW(1,2), 'f1=>42'::hstore)</literal>
+        <literal>populate_record(ROW(1, 2), 'f1=>42'::hstore)</literal>
         <returnvalue>(42,2)</returnvalue>
        </para></entry>
       </row>
@@ -799,7 +799,7 @@ UPDATE tab SET h = h || hstore('c', '3');
    If multiple keys are to be added or changed in one operation,
    the concatenation approach is more efficient than subscripting:
 <programlisting>
-UPDATE tab SET h = h || hstore(array['q', 'w'], array['11', '12']);
+UPDATE tab SET h = h || hstore(ARRAY['q', 'w'], ARRAY['11', '12']);
 </programlisting>
   </para>
 

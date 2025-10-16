@@ -701,7 +701,7 @@ FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow'))
 
 <synopsis>
 <replaceable>function_call</replaceable> <optional>WITH ORDINALITY</optional> <optional><optional>AS</optional> <replaceable>table_alias</replaceable> <optional>(<replaceable>column_alias</replaceable> <optional>, ... </optional>)</optional></optional>
-ROWS FROM( <replaceable>function_call</replaceable> <optional>, ... </optional> ) <optional>WITH ORDINALITY</optional> <optional><optional>AS</optional> <replaceable>table_alias</replaceable> <optional>(<replaceable>column_alias</replaceable> <optional>, ... </optional>)</optional></optional>
+ROWS FROM ( <replaceable>function_call</replaceable> <optional>, ... </optional> ) <optional>WITH ORDINALITY</optional> <optional><optional>AS</optional> <replaceable>table_alias</replaceable> <optional>(<replaceable>column_alias</replaceable> <optional>, ... </optional>)</optional></optional>
 </synopsis>
 
     <para>
@@ -729,7 +729,7 @@ UNNEST( <replaceable>array_expression</replaceable> <optional>, ... </optional> 
 
     <para>
      If no <replaceable>table_alias</replaceable> is specified, the function
-     name is used as the table name; in the case of a <literal>ROWS FROM()</literal>
+     name is used as the table name; in the case of a <literal>ROWS FROM</literal>
      construct, the first function's name is used.
     </para>
 
@@ -778,20 +778,20 @@ SELECT * FROM vw_getfoo;
 <synopsis>
 <replaceable>function_call</replaceable> <optional>AS</optional> <replaceable>alias</replaceable> (<replaceable>column_definition</replaceable> <optional>, ... </optional>)
 <replaceable>function_call</replaceable> AS <optional><replaceable>alias</replaceable></optional> (<replaceable>column_definition</replaceable> <optional>, ... </optional>)
-ROWS FROM( ... <replaceable>function_call</replaceable> AS (<replaceable>column_definition</replaceable> <optional>, ... </optional>) <optional>, ... </optional> )
+ROWS FROM ( ... <replaceable>function_call</replaceable> AS (<replaceable>column_definition</replaceable> <optional>, ... </optional>) <optional>, ... </optional> )
 </synopsis>
 
     <para>
-     When not using the <literal>ROWS FROM()</literal> syntax,
+     When not using the <literal>ROWS FROM</literal> syntax,
      the <replaceable>column_definition</replaceable> list replaces the column
      alias list that could otherwise be attached to the <literal>FROM</literal>
      item; the names in the column definitions serve as column aliases.
-     When using the <literal>ROWS FROM()</literal> syntax,
+     When using the <literal>ROWS FROM</literal> syntax,
      a <replaceable>column_definition</replaceable> list can be attached to
      each member function separately; or if there is only one member function
      and no <literal>WITH ORDINALITY</literal> clause,
      a <replaceable>column_definition</replaceable> list can be written in
-     place of a column alias list following <literal>ROWS FROM()</literal>.
+     place of a column alias list following <literal>ROWS FROM</literal>.
     </para>
 
     <para>
@@ -2232,7 +2232,7 @@ WITH RECURSIVE included_parts(sub_part, part, quantity) AS (
     FROM included_parts pr, parts p
     WHERE p.part = pr.sub_part
 )
-SELECT sub_part, SUM(quantity) as total_quantity
+SELECT sub_part, SUM(quantity) AS total_quantity
 FROM included_parts
 GROUP BY sub_part
 </programlisting>
@@ -2603,7 +2603,7 @@ WHERE w2.key = 123;
    undesirable is
 <programlisting>
 WITH w AS (
-    SELECT key, very_expensive_function(val) as f FROM some_table
+    SELECT key, very_expensive_function(val) AS f FROM some_table
 )
 SELECT * FROM w AS w1 JOIN w AS w2 ON w1.f = w2.f;
 </programlisting>

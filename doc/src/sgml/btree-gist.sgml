@@ -95,14 +95,14 @@ SELECT *, a &lt;-&gt; 42 AS dist FROM test ORDER BY a &lt;-&gt; 42 LIMIT 10;
   EXCLUDE USING GIST (cage WITH =, animal WITH &lt;&gt;)
 );
 
-=&gt; INSERT INTO zoo VALUES(123, 'zebra');
+=&gt; INSERT INTO zoo VALUES (123, 'zebra');
 INSERT 0 1
-=&gt; INSERT INTO zoo VALUES(123, 'zebra');
+=&gt; INSERT INTO zoo VALUES (123, 'zebra');
 INSERT 0 1
-=&gt; INSERT INTO zoo VALUES(123, 'lion');
+=&gt; INSERT INTO zoo VALUES (123, 'lion');
 ERROR:  conflicting key value violates exclusion constraint "zoo_cage_animal_excl"
 DETAIL:  Key (cage, animal)=(123, lion) conflicts with existing key (cage, animal)=(123, zebra).
-=&gt; INSERT INTO zoo VALUES(124, 'lion');
+=&gt; INSERT INTO zoo VALUES (124, 'lion');
 INSERT 0 1
 </programlisting>
 

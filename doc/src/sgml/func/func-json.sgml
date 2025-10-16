@@ -627,7 +627,7 @@
          <returnvalue>[1, true, {"a":null}]</returnvalue>
         </para>
         <para>
-         <literal>json_array(SELECT * FROM (VALUES(1),(2)) t)</literal>
+         <literal>json_array(SELECT * FROM (VALUES (1), (2)) t)</literal>
          <returnvalue>[1, 2]</returnvalue>
        </para></entry>
       </row>
@@ -3423,7 +3423,7 @@ DETAIL:  Missing "]" after array dimensions.
         <returnvalue>2015-02-01</returnvalue>
        </para>
        <para>
-        <literal>JSON_VALUE(jsonb '[1,2]', 'strict $[$off]' PASSING 1 as off)</literal>
+        <literal>JSON_VALUE(jsonb '[1,2]', 'strict $[$off]' PASSING 1 AS off)</literal>
         <returnvalue>2</returnvalue>
        </para>
        <para>
