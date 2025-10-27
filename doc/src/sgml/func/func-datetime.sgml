@@ -1065,17 +1065,17 @@
    </para>
 
 <screen>
-SELECT (DATE '2001-02-16', DATE '2001-12-21') OVERLAPS
-       (DATE '2001-10-30', DATE '2002-10-30');
+SELECT (date '2001-02-16', date '2001-12-21') OVERLAPS
+       (date '2001-10-30', date '2002-10-30');
 <lineannotation>Result: </lineannotation><computeroutput>true</computeroutput>
-SELECT (DATE '2001-02-16', INTERVAL '100 days') OVERLAPS
-       (DATE '2001-10-30', DATE '2002-10-30');
+SELECT (date '2001-02-16', interval '100 days') OVERLAPS
+       (date '2001-10-30', date '2002-10-30');
 <lineannotation>Result: </lineannotation><computeroutput>false</computeroutput>
-SELECT (DATE '2001-10-29', DATE '2001-10-30') OVERLAPS
-       (DATE '2001-10-30', DATE '2001-10-31');
+SELECT (date '2001-10-29', date '2001-10-30') OVERLAPS
+       (date '2001-10-30', date '2001-10-31');
 <lineannotation>Result: </lineannotation><computeroutput>false</computeroutput>
-SELECT (DATE '2001-10-30', DATE '2001-10-30') OVERLAPS
-       (DATE '2001-10-30', DATE '2001-10-31');
+SELECT (date '2001-10-30', date '2001-10-30') OVERLAPS
+       (date '2001-10-30', date '2001-10-31');
 <lineannotation>Result: </lineannotation><computeroutput>true</computeroutput>
 </screen>
 
@@ -1124,7 +1124,7 @@ SELECT timestamp with time zone '2005-04-02 12:00:00-07' + interval '24 hours';
   <para>
    Subtraction of dates and timestamps can also be complex.  One conceptually
    simple way to perform subtraction is to convert each value to a number
-   of seconds using <literal>EXTRACT(EPOCH FROM ...)</literal>, then subtract the
+   of seconds using <literal>extract(epoch FROM ...)</literal>, then subtract the
    results; this produces the
    number of <emphasis>seconds</emphasis> between the two values.  This will adjust
    for the number of days in each month, timezone changes, and daylight
@@ -1141,11 +1141,11 @@ SELECT timestamp with time zone '2005-04-02 12:00:00-07' + interval '24 hours';
   </para>
 
 <screen>
-SELECT EXTRACT(EPOCH FROM timestamptz '2013-07-01 12:00:00') -
-       EXTRACT(EPOCH FROM timestamptz '2013-03-01 12:00:00');
+SELECT extract(epoch FROM timestamptz '2013-07-01 12:00:00') -
+       extract(epoch FROM timestamptz '2013-03-01 12:00:00');
 <lineannotation>Result: </lineannotation><computeroutput>10537200.000000</computeroutput>
-SELECT (EXTRACT(EPOCH FROM timestamptz '2013-07-01 12:00:00') -
-        EXTRACT(EPOCH FROM timestamptz '2013-03-01 12:00:00'))
+SELECT (extract(epoch FROM timestamptz '2013-07-01 12:00:00') -
+        extract(epoch FROM timestamptz '2013-03-01 12:00:00'))
         / 60 / 60 / 24;
 <lineannotation>Result: </lineannotation><computeroutput>121.9583333333333333</computeroutput>
 SELECT timestamptz '2013-07-01 12:00:00' - timestamptz '2013-03-01 12:00:00';
@@ -1155,7 +1155,7 @@ SELECT age(timestamptz '2013-07-01 12:00:00', timestamptz '2013-03-01 12:00:00')
 </screen>
 
   <sect2 id="functions-datetime-extract">
-   <title><function>EXTRACT</function>, <function>date_part</function></title>
+   <title><function>extract</function>, <function>date_part</function></title>
 
    <indexterm>
     <primary>date_part</primary>
@@ -1165,7 +1165,7 @@ SELECT age(timestamptz '2013-07-01 12:00:00', timestamptz '2013-03-01 12:00:00')
    </indexterm>
 
 <synopsis>
-EXTRACT(<replaceable>field</replaceable> FROM <replaceable>source</replaceable>)
+extract(<replaceable>field</replaceable> FROM <replaceable>source</replaceable>)
 </synopsis>
 
    <para>
@@ -1198,15 +1198,15 @@ EXTRACT(<replaceable>field</replaceable> FROM <replaceable>source</replaceable>)
        </para>
 
 <screen>
-SELECT EXTRACT(CENTURY FROM TIMESTAMP '2000-12-16 12:21:13');
+SELECT extract(century FROM timestamp '2000-12-16 12:21:13');
 <lineannotation>Result: </lineannotation><computeroutput>20</computeroutput>
-SELECT EXTRACT(CENTURY FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(century FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>21</computeroutput>
-SELECT EXTRACT(CENTURY FROM DATE '0001-01-01 AD');
+SELECT extract(century FROM date '0001-01-01 AD');
 <lineannotation>Result: </lineannotation><computeroutput>1</computeroutput>
-SELECT EXTRACT(CENTURY FROM DATE '0001-12-31 BC');
+SELECT extract(century FROM date '0001-12-31 BC');
 <lineannotation>Result: </lineannotation><computeroutput>-1</computeroutput>
-SELECT EXTRACT(CENTURY FROM INTERVAL '2001 years');
+SELECT extract(century FROM interval '2001 years');
 <lineannotation>Result: </lineannotation><computeroutput>20</computeroutput>
 </screen>
       </listitem>
@@ -1221,9 +1221,9 @@ SELECT EXTRACT(CENTURY FROM INTERVAL '2001 years');
        </para>
 
 <screen>
-SELECT EXTRACT(DAY FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(day FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>16</computeroutput>
-SELECT EXTRACT(DAY FROM INTERVAL '40 days 1 minute');
+SELECT extract(day FROM interval '40 days 1 minute');
 <lineannotation>Result: </lineannotation><computeroutput>40</computeroutput>
 </screen>
 
@@ -1238,7 +1238,7 @@ SELECT EXTRACT(DAY FROM INTERVAL '40 days 1 minute');
        </para>
 
 <screen>
-SELECT EXTRACT(DECADE FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(decade FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>200</computeroutput>
 </screen>
       </listitem>
@@ -1253,7 +1253,7 @@ SELECT EXTRACT(DECADE FROM TIMESTAMP '2001-02-16 20:38:40');
        </para>
 
 <screen>
-SELECT EXTRACT(DOW FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(dow FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>5</computeroutput>
 </screen>
        <para>
@@ -1273,7 +1273,7 @@ SELECT EXTRACT(DOW FROM TIMESTAMP '2001-02-16 20:38:40');
        </para>
 
 <screen>
-SELECT EXTRACT(DOY FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(doy FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>47</computeroutput>
 </screen>
       </listitem>
@@ -1294,11 +1294,11 @@ SELECT EXTRACT(DOY FROM TIMESTAMP '2001-02-16 20:38:40');
        </para>
 
 <screen>
-SELECT EXTRACT(EPOCH FROM TIMESTAMP WITH TIME ZONE '2001-02-16 20:38:40.12-08');
+SELECT extract(epoch FROM timestamp with time zone '2001-02-16 20:38:40.12-08');
 <lineannotation>Result: </lineannotation><computeroutput>982384720.120000</computeroutput>
-SELECT EXTRACT(EPOCH FROM TIMESTAMP '2001-02-16 20:38:40.12');
+SELECT extract(epoch FROM timestamp '2001-02-16 20:38:40.12');
 <lineannotation>Result: </lineannotation><computeroutput>982355920.120000</computeroutput>
-SELECT EXTRACT(EPOCH FROM INTERVAL '5 days 3 hours');
+SELECT extract(epoch FROM interval '5 days 3 hours');
 <lineannotation>Result: </lineannotation><computeroutput>442800.000000</computeroutput>
 </screen>
 
@@ -1330,7 +1330,7 @@ SELECT to_timestamp(982384720.12);
        </para>
 
 <screen>
-SELECT EXTRACT(HOUR FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(hour FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>20</computeroutput>
 </screen>
       </listitem>
@@ -1345,7 +1345,7 @@ SELECT EXTRACT(HOUR FROM TIMESTAMP '2001-02-16 20:38:40');
        </para>
 
 <screen>
-SELECT EXTRACT(ISODOW FROM TIMESTAMP '2001-02-18 20:38:40');
+SELECT extract(isodow FROM timestamp '2001-02-18 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>7</computeroutput>
 </screen>
        <para>
@@ -1365,9 +1365,9 @@ SELECT EXTRACT(ISODOW FROM TIMESTAMP '2001-02-18 20:38:40');
        </para>
 
 <screen>
-SELECT EXTRACT(ISOYEAR FROM DATE '2006-01-01');
+SELECT extract(isoyear FROM date '2006-01-01');
 <lineannotation>Result: </lineannotation><computeroutput>2005</computeroutput>
-SELECT EXTRACT(ISOYEAR FROM DATE '2006-01-02');
+SELECT extract(isoyear FROM date '2006-01-02');
 <lineannotation>Result: </lineannotation><computeroutput>2006</computeroutput>
 </screen>
 
@@ -1392,9 +1392,9 @@ SELECT EXTRACT(ISOYEAR FROM DATE '2006-01-02');
        </para>
 
 <screen>
-SELECT EXTRACT(JULIAN FROM DATE '2006-01-01');
+SELECT extract(julian FROM date '2006-01-01');
 <lineannotation>Result: </lineannotation><computeroutput>2453737</computeroutput>
-SELECT EXTRACT(JULIAN FROM TIMESTAMP '2006-01-01 12:00');
+SELECT extract(julian FROM timestamp '2006-01-01 12:00');
 <lineannotation>Result: </lineannotation><computeroutput>2453737.50000000000000000000</computeroutput>
 </screen>
       </listitem>
@@ -1409,7 +1409,7 @@ SELECT EXTRACT(JULIAN FROM TIMESTAMP '2006-01-01 12:00');
        </para>
 
 <screen>
-SELECT EXTRACT(MICROSECONDS FROM TIME '17:12:28.5');
+SELECT extract(microseconds FROM time '17:12:28.5');
 <lineannotation>Result: </lineannotation><computeroutput>28500000</computeroutput>
 </screen>
       </listitem>
@@ -1424,9 +1424,9 @@ SELECT EXTRACT(MICROSECONDS FROM TIME '17:12:28.5');
        </para>
 
 <screen>
-SELECT EXTRACT(MILLENNIUM FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(millennium FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>3</computeroutput>
-SELECT EXTRACT(MILLENNIUM FROM INTERVAL '2001 years');
+SELECT extract(millennium FROM interval '2001 years');
 <lineannotation>Result: </lineannotation><computeroutput>2</computeroutput>
 </screen>
 
@@ -1446,7 +1446,7 @@ SELECT EXTRACT(MILLENNIUM FROM INTERVAL '2001 years');
        </para>
 
 <screen>
-SELECT EXTRACT(MILLISECONDS FROM TIME '17:12:28.5');
+SELECT extract(milliseconds FROM time '17:12:28.5');
 <lineannotation>Result: </lineannotation><computeroutput>28500.000</computeroutput>
 </screen>
       </listitem>
@@ -1460,7 +1460,7 @@ SELECT EXTRACT(MILLISECONDS FROM TIME '17:12:28.5');
        </para>
 
 <screen>
-SELECT EXTRACT(MINUTE FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(minute FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>38</computeroutput>
 </screen>
       </listitem>
@@ -1476,11 +1476,11 @@ SELECT EXTRACT(MINUTE FROM TIMESTAMP '2001-02-16 20:38:40');
        </para>
 
 <screen>
-SELECT EXTRACT(MONTH FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(month FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>2</computeroutput>
-SELECT EXTRACT(MONTH FROM INTERVAL '2 years 3 months');
+SELECT extract(month FROM interval '2 years 3 months');
 <lineannotation>Result: </lineannotation><computeroutput>3</computeroutput>
-SELECT EXTRACT(MONTH FROM INTERVAL '2 years 13 months');
+SELECT extract(month FROM interval '2 years 13 months');
 <lineannotation>Result: </lineannotation><computeroutput>1</computeroutput>
 </screen>
       </listitem>
@@ -1496,9 +1496,9 @@ SELECT EXTRACT(MONTH FROM INTERVAL '2 years 13 months');
        </para>
 
 <screen>
-SELECT EXTRACT(QUARTER FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(quarter FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>1</computeroutput>
-SELECT EXTRACT(QUARTER FROM INTERVAL '1 year 6 months');
+SELECT extract(quarter FROM interval '1 year 6 months');
 <lineannotation>Result: </lineannotation><computeroutput>3</computeroutput>
 </screen>
       </listitem>
@@ -1512,9 +1512,9 @@ SELECT EXTRACT(QUARTER FROM INTERVAL '1 year 6 months');
        </para>
 
 <screen>
-SELECT EXTRACT(SECOND FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(second FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>40.000000</computeroutput>
-SELECT EXTRACT(SECOND FROM TIME '17:12:28.5');
+SELECT extract(second FROM time '17:12:28.5');
 <lineannotation>Result: </lineannotation><computeroutput>28.500000</computeroutput>
 </screen>
       </listitem>
@@ -1576,9 +1576,9 @@ SELECT EXTRACT(SECOND FROM TIME '17:12:28.5');
        </para>
 
 <screen>
-SELECT EXTRACT(WEEK FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(week FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>7</computeroutput>
-SELECT EXTRACT(WEEK FROM INTERVAL '13 days 24 hours');
+SELECT extract(week FROM interval '13 days 24 hours');
 <lineannotation>Result: </lineannotation><computeroutput>1</computeroutput>
 </screen>
       </listitem>
@@ -1593,7 +1593,7 @@ SELECT EXTRACT(WEEK FROM INTERVAL '13 days 24 hours');
        </para>
 
 <screen>
-SELECT EXTRACT(YEAR FROM TIMESTAMP '2001-02-16 20:38:40');
+SELECT extract(year FROM timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>2001</computeroutput>
 </screen>
       </listitem>
@@ -1609,9 +1609,9 @@ SELECT EXTRACT(YEAR FROM TIMESTAMP '2001-02-16 20:38:40');
     can produce surprising results if one starts with a non-normalized
     interval representation, for example:
 <screen>
-SELECT INTERVAL '80 minutes';
+SELECT interval '80 minutes';
 <lineannotation>Result: </lineannotation><computeroutput>01:20:00</computeroutput>
-SELECT EXTRACT(MINUTES FROM INTERVAL '80 minutes');
+SELECT extract(minutes FROM interval '80 minutes');
 <lineannotation>Result: </lineannotation><computeroutput>20</computeroutput>
 </screen>
    </para>
@@ -1655,9 +1655,9 @@ date_part('<replaceable>field</replaceable>', <replaceable>source</replaceable>)
    </para>
 
 <screen>
-SELECT date_part('day', TIMESTAMP '2001-02-16 20:38:40');
+SELECT date_part('day', timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>16</computeroutput>
-SELECT date_part('hour', INTERVAL '4 hours 3 minutes');
+SELECT date_part('hour', interval '4 hours 3 minutes');
 <lineannotation>Result: </lineannotation><computeroutput>4</computeroutput>
 </screen>
 
@@ -1732,15 +1732,15 @@ date_trunc(<replaceable>field</replaceable>, <replaceable>source</replaceable> <
    <para>
     Examples (assuming the local time zone is <literal>America/New_York</literal>):
 <screen>
-SELECT date_trunc('hour', TIMESTAMP '2001-02-16 20:38:40');
+SELECT date_trunc('hour', timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>2001-02-16 20:00:00</computeroutput>
-SELECT date_trunc('year', TIMESTAMP '2001-02-16 20:38:40');
+SELECT date_trunc('year', timestamp '2001-02-16 20:38:40');
 <lineannotation>Result: </lineannotation><computeroutput>2001-01-01 00:00:00</computeroutput>
-SELECT date_trunc('day', TIMESTAMP WITH TIME ZONE '2001-02-16 20:38:40+00');
+SELECT date_trunc('day', timestamp with time zone '2001-02-16 20:38:40+00');
 <lineannotation>Result: </lineannotation><computeroutput>2001-02-16 00:00:00-05</computeroutput>
-SELECT date_trunc('day', TIMESTAMP WITH TIME ZONE '2001-02-16 20:38:40+00', 'Australia/Sydney');
+SELECT date_trunc('day', timestamp with time zone '2001-02-16 20:38:40+00', 'Australia/Sydney');
 <lineannotation>Result: </lineannotation><computeroutput>2001-02-16 08:00:00-05</computeroutput>
-SELECT date_trunc('hour', INTERVAL '3 days 02:47:33');
+SELECT date_trunc('hour', interval '3 days 02:47:33');
 <lineannotation>Result: </lineannotation><computeroutput>3 days 02:00:00</computeroutput>
 </screen>
    </para>
@@ -1849,7 +1849,7 @@ SELECT date_bin('15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-0
          value is in the named time zone.
         </para>
         <para>
-         <literal>timestamp '2001-02-16 20:38:40' at time zone 'America/Denver'</literal>
+         <literal>timestamp '2001-02-16 20:38:40' AT TIME ZONE 'America/Denver'</literal>
          <returnvalue>2001-02-17 03:38:40+00</returnvalue>
         </para></entry>
        </row>
@@ -1881,7 +1881,7 @@ SELECT date_bin('15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-0
          appear in that zone.
         </para>
         <para>
-         <literal>timestamp with time zone '2001-02-16 20:38:40-05' at time zone 'America/Denver'</literal>
+         <literal>timestamp with time zone '2001-02-16 20:38:40-05' AT TIME ZONE 'America/Denver'</literal>
          <returnvalue>2001-02-16 18:38:40</returnvalue>
         </para></entry>
        </row>
@@ -1913,7 +1913,7 @@ SELECT date_bin('15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-0
          offset for the named destination zone.
         </para>
         <para>
-         <literal>time with time zone '05:34:17-05' at time zone 'UTC'</literal>
+         <literal>time with time zone '05:34:17-05' AT TIME ZONE 'UTC'</literal>
          <returnvalue>10:34:17+00</returnvalue>
         </para></entry>
        </row>
@@ -1943,7 +1943,7 @@ SELECT date_bin('15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-0
    <para>
     In these expressions, the desired time zone <replaceable>zone</replaceable> can be
     specified either as a text value (e.g., <literal>'America/Los_Angeles'</literal>)
-    or as an interval (e.g., <literal>INTERVAL '-08:00'</literal>).
+    or as an interval (e.g., <literal>interval '-08:00'</literal>).
     In the text case, a time zone name can be specified in any of the ways
     described in <xref linkend="datatype-timezones"/>.
     The interval case is only useful for zones that have fixed offsets from
@@ -1961,17 +1961,17 @@ SELECT date_bin('15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-0
     Examples (assuming the current <xref linkend="guc-timezone"/> setting
     is <literal>America/Los_Angeles</literal>):
 <screen>
-SELECT TIMESTAMP '2001-02-16 20:38:40' AT TIME ZONE 'America/Denver';
+SELECT timestamp '2001-02-16 20:38:40' AT TIME ZONE 'America/Denver';
 <lineannotation>Result: </lineannotation><computeroutput>2001-02-16 19:38:40-08</computeroutput>
-SELECT TIMESTAMP WITH TIME ZONE '2001-02-16 20:38:40-05' AT TIME ZONE 'America/Denver';
+SELECT timestamp with time zone '2001-02-16 20:38:40-05' AT TIME ZONE 'America/Denver';
 <lineannotation>Result: </lineannotation><computeroutput>2001-02-16 18:38:40</computeroutput>
-SELECT TIMESTAMP '2001-02-16 20:38:40' AT TIME ZONE 'Asia/Tokyo' AT TIME ZONE 'America/Chicago';
+SELECT timestamp '2001-02-16 20:38:40' AT TIME ZONE 'Asia/Tokyo' AT TIME ZONE 'America/Chicago';
 <lineannotation>Result: </lineannotation><computeroutput>2001-02-16 05:38:40</computeroutput>
-SELECT TIMESTAMP WITH TIME ZONE '2001-02-16 20:38:40-05' AT LOCAL;
+SELECT timestamp with time zone '2001-02-16 20:38:40-05' AT LOCAL;
 <lineannotation>Result: </lineannotation><computeroutput>2001-02-16 17:38:40</computeroutput>
-SELECT TIMESTAMP WITH TIME ZONE '2001-02-16 20:38:40-05' AT TIME ZONE '+05';
+SELECT timestamp with time zone '2001-02-16 20:38:40-05' AT TIME ZONE '+05';
 <lineannotation>Result: </lineannotation><computeroutput>2001-02-16 20:38:40</computeroutput>
-SELECT TIME WITH TIME ZONE '20:38:40-05' AT LOCAL;
+SELECT time with time zone '20:38:40-05' AT LOCAL;
 <lineannotation>Result: </lineannotation><computeroutput>17:38:40</computeroutput>
 </screen>
     The first example adds a time zone to a value that lacks it, and

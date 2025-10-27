@@ -447,7 +447,7 @@ SELECT '[1.234, 5.678]'::floatrange;
 
 <programlisting>
 CREATE FUNCTION time_subtype_diff(x time, y time) RETURNS float8 AS
-'SELECT EXTRACT(EPOCH FROM (x - y))' LANGUAGE sql STRICT IMMUTABLE;
+'SELECT extract(epoch FROM (x - y))' LANGUAGE sql STRICT IMMUTABLE;
 
 CREATE TYPE timerange AS RANGE (
     subtype = time,

@@ -494,7 +494,7 @@ CREATE OR REPLACE FUNCTION init_session()
   LANGUAGE plpgsql AS
 $$
 DECLARE
-  hour integer = EXTRACT('hour' FROM current_time at time zone 'utc');
+  hour integer = extract('hour' FROM current_time AT TIME ZONE 'utc');
   rec boolean;
 BEGIN
 -- 1. Forbid logging in between 2AM and 4AM.

@@ -2270,7 +2270,7 @@ CREATE TABLE measurement_year_month (
     logdate         date NOT NULL,
     peaktemp        int,
     unitsales       int
-) PARTITION BY RANGE (EXTRACT(YEAR FROM logdate), EXTRACT(MONTH FROM logdate));
+) PARTITION BY RANGE (extract(year FROM logdate), extract(month FROM logdate));
 </programlisting></para>
 
   <para>
