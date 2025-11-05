@@ -296,7 +296,7 @@ FROM crosstab(
   'SELECT rowid, attribute, value
    FROM ct
    WHERE attribute = ''att2'' OR attribute = ''att3''
-   ORDER BY 1,2')
+   ORDER BY 1, 2')
 AS ct(row_name text, category_1 text, category_2 text, category_3 text);
 
  row_name | category_1 | category_2 | category_3
@@ -374,7 +374,7 @@ FROM crosstab3(
   'SELECT rowid, attribute, value
    FROM ct
    WHERE attribute = ''att2'' OR attribute = ''att3''
-   ORDER BY 1,2');
+   ORDER BY 1, 2');
 </programlisting>
     </para>
 
