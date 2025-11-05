@@ -600,7 +600,7 @@ b
         Extracts an <type>hstore</type>'s keys and values as a set of records.
        </para>
        <para>
-        <literal>select * from each('a=&gt;1,b=&gt;2')</literal>
+        <literal>SELECT * FROM each('a=&gt;1,b=&gt;2')</literal>
         <returnvalue></returnvalue>
 <programlisting>
  key | value

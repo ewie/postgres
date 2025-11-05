@@ -151,7 +151,7 @@
         of <parameter>newsubstring</parameter>.
        </para>
        <para>
-        <literal>overlay('\x1234567890'::bytea placing '\002\003'::bytea from 2 for 3)</literal>
+        <literal>overlay('\x1234567890'::bytea PLACING '\002\003'::bytea FROM 2 FOR 3)</literal>
         <returnvalue>\x12020390</returnvalue>
        </para></entry>
       </row>
@@ -170,7 +170,7 @@
         <parameter>bytes</parameter>, or zero if it's not present.
        </para>
        <para>
-        <literal>position('\x5678'::bytea in '\x1234567890'::bytea)</literal>
+        <literal>position('\x5678'::bytea IN '\x1234567890'::bytea)</literal>
         <returnvalue>3</returnvalue>
        </para></entry>
       </row>
@@ -211,7 +211,7 @@
         and <parameter>count</parameter>.
        </para>
        <para>
-        <literal>substring('\x1234567890'::bytea from 3 for 2)</literal>
+        <literal>substring('\x1234567890'::bytea FROM 3 FOR 2)</literal>
         <returnvalue>\x5678</returnvalue>
        </para></entry>
       </row>

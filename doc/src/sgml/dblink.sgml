@@ -666,7 +666,7 @@ dblink_exec(text sql [, bool fail_on_error]) returns text
       <para>
        The SQL command that you wish to execute in the remote database,
        for example
-       <literal>insert into foo values(0, 'a', '{"a0","b0","c0"}')</literal>.
+       <literal>INSERT INTO foo VALUES (0, 'a', '{"a0","b0","c0"}')</literal>.
       </para>
      </listitem>
     </varlistentry>
