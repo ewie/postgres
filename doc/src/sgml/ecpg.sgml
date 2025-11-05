@@ -1991,7 +1991,7 @@ EXEC SQL EXECUTE IMMEDIATE :stmt;
     example:
 <programlisting>
 EXEC SQL BEGIN DECLARE SECTION;
-const char *stmt = "INSERT INTO test1 VALUES (?, ?);";
+const char *stmt = "INSERT INTO test1 VALUES(?, ?);";
 EXEC SQL END DECLARE SECTION;
 
 EXEC SQL PREPARE mystmt FROM :stmt;
@@ -8226,8 +8226,8 @@ main(void)
 <programlisting>
 $int j = 3;
 $CONNECT TO :dbname;
-$CREATE TABLE test (i INT PRIMARY KEY, j INT);
-$INSERT INTO test (i, j) VALUES (7, :j);
+$CREATE TABLE test(i INT PRIMARY KEY, j INT);
+$INSERT INTO test(i, j) VALUES (7, :j);
 $COMMIT;
 </programlisting>
   </para>

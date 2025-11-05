@@ -3288,10 +3288,10 @@ CREATE TABLE holidays (
     num_weeks integer,
     happiness happiness
 );
-INSERT INTO holidays (num_weeks, happiness) VALUES (4, 'happy');
-INSERT INTO holidays (num_weeks, happiness) VALUES (6, 'very happy');
-INSERT INTO holidays (num_weeks, happiness) VALUES (8, 'ecstatic');
-INSERT INTO holidays (num_weeks, happiness) VALUES (2, 'sad');
+INSERT INTO holidays(num_weeks,happiness) VALUES (4, 'happy');
+INSERT INTO holidays(num_weeks,happiness) VALUES (6, 'very happy');
+INSERT INTO holidays(num_weeks,happiness) VALUES (8, 'ecstatic');
+INSERT INTO holidays(num_weeks,happiness) VALUES (2, 'sad');
 ERROR:  invalid input value for enum happiness: "sad"
 SELECT person.name, holidays.num_weeks FROM person, holidays
   WHERE person.current_mood = holidays.happiness;
@@ -4112,7 +4112,7 @@ SELECT macaddr8_set7bit('08:00:2b:01:02:03');
     <title>Using the Bit String Types</title>
 
 <programlisting>
-CREATE TABLE test (a bit(3), b bit varying(5));
+CREATE TABLE test (a BIT(3), b BIT VARYING(5));
 INSERT INTO test VALUES (B'101', B'00');
 INSERT INTO test VALUES (B'10', B'101');
 <computeroutput>
@@ -4687,8 +4687,8 @@ SET xmloption TO { DOCUMENT | CONTENT };
 <programlisting>
 CREATE DOMAIN posint AS integer CHECK (VALUE &gt; 0);
 CREATE TABLE mytable (id posint);
-INSERT INTO mytable VALUES (1);   -- works
-INSERT INTO mytable VALUES (-1);  -- fails
+INSERT INTO mytable VALUES(1);   -- works
+INSERT INTO mytable VALUES(-1);  -- fails
 </programlisting>
    </para>
 

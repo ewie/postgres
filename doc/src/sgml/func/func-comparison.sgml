@@ -523,13 +523,13 @@
     for both tests.  For example:
 
 <programlisting>
-SELECT ROW(1, 2.5, 'this is a test') = ROW(1, 3, 'not the same');
+SELECT ROW(1,2.5,'this is a test') = ROW(1, 3, 'not the same');
 
 SELECT ROW(table.*) IS NULL FROM table;  -- detect all-null rows
 
 SELECT ROW(table.*) IS NOT NULL FROM table;  -- detect all-non-null rows
 
-SELECT NOT (ROW(table.*) IS NOT NULL) FROM TABLE; -- detect at least one null in rows
+SELECT NOT(ROW(table.*) IS NOT NULL) FROM TABLE; -- detect at least one null in rows
 </programlisting>
 
     In some cases, it may be preferable to

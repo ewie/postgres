@@ -2331,7 +2331,7 @@ SELECT ARRAY[[1,2],[3,4]];
     an array of the proper kind, not only a sub-<literal>ARRAY</literal> construct.
     For example:
 <programlisting>
-CREATE TABLE arr (f1 int[], f2 int[]);
+CREATE TABLE arr(f1 int[], f2 int[]);
 
 INSERT INTO arr VALUES (ARRAY[[1,2],[3,4]], ARRAY[[5,6],[7,8]]);
 
@@ -2418,7 +2418,7 @@ SELECT ARRAY(SELECT ARRAY[i, i*2] FROM generate_series(1,5) AS a(i));
     expressions (separated by commas) for the row field values, and finally
     a right parenthesis.  For example:
 <programlisting>
-SELECT ROW(1, 2.5, 'this is a test');
+SELECT ROW(1,2.5,'this is a test');
 </programlisting>
     The key word <literal>ROW</literal> is optional when there is more than one
     expression in the list.
@@ -2457,12 +2457,12 @@ SELECT ROW(t.f1, t.f2, 42) FROM t;
     created with <command>CREATE TYPE AS</command>.  An explicit cast might be needed
     to avoid ambiguity.  For example:
 <programlisting>
-CREATE TABLE mytable (f1 int, f2 float, f3 text);
+CREATE TABLE mytable(f1 int, f2 float, f3 text);
 
 CREATE FUNCTION getf1(mytable) RETURNS int AS 'SELECT $1.f1' LANGUAGE SQL;
 
 -- No cast needed since only one getf1() exists
-SELECT getf1(ROW(1, 2.5, 'this is a test'));
+SELECT getf1(ROW(1,2.5,'this is a test'));
  getf1
 -------
      1
@@ -2473,16 +2473,16 @@ CREATE TYPE myrowtype AS (f1 int, f2 text, f3 numeric);
 CREATE FUNCTION getf1(myrowtype) RETURNS int AS 'SELECT $1.f1' LANGUAGE SQL;
 
 -- Now we need a cast to indicate which function to call:
-SELECT getf1(ROW(1, 2.5, 'this is a test'));
+SELECT getf1(ROW(1,2.5,'this is a test'));
 ERROR:  function getf1(record) is not unique
 
-SELECT getf1(ROW(1, 2.5, 'this is a test')::mytable);
+SELECT getf1(ROW(1,2.5,'this is a test')::mytable);
  getf1
 -------
      1
 (1 row)
 
-SELECT getf1(CAST(ROW(11, 'this is a test', 2.5) AS myrowtype));
+SELECT getf1(CAST(ROW(11,'this is a test',2.5) AS myrowtype));
  getf1
 -------
     11

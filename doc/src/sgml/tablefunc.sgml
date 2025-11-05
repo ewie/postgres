@@ -281,15 +281,15 @@ SELECT * FROM crosstab('...') AS ct(row_name text, category_1 text, category_2 t
    <para>
     Here is a complete example:
 <programlisting>
-CREATE TABLE ct (id SERIAL, rowid TEXT, attribute TEXT, value TEXT);
-INSERT INTO ct (rowid, attribute, value) VALUES ('test1', 'att1', 'val1');
-INSERT INTO ct (rowid, attribute, value) VALUES ('test1', 'att2', 'val2');
-INSERT INTO ct (rowid, attribute, value) VALUES ('test1', 'att3', 'val3');
-INSERT INTO ct (rowid, attribute, value) VALUES ('test1', 'att4', 'val4');
-INSERT INTO ct (rowid, attribute, value) VALUES ('test2', 'att1', 'val5');
-INSERT INTO ct (rowid, attribute, value) VALUES ('test2', 'att2', 'val6');
-INSERT INTO ct (rowid, attribute, value) VALUES ('test2', 'att3', 'val7');
-INSERT INTO ct (rowid, attribute, value) VALUES ('test2', 'att4', 'val8');
+CREATE TABLE ct(id SERIAL, rowid TEXT, attribute TEXT, value TEXT);
+INSERT INTO ct(rowid, attribute, value) VALUES('test1','att1','val1');
+INSERT INTO ct(rowid, attribute, value) VALUES('test1','att2','val2');
+INSERT INTO ct(rowid, attribute, value) VALUES('test1','att3','val3');
+INSERT INTO ct(rowid, attribute, value) VALUES('test1','att4','val4');
+INSERT INTO ct(rowid, attribute, value) VALUES('test2','att1','val5');
+INSERT INTO ct(rowid, attribute, value) VALUES('test2','att2','val6');
+INSERT INTO ct(rowid, attribute, value) VALUES('test2','att3','val7');
+INSERT INTO ct(rowid, attribute, value) VALUES('test2','att4','val8');
 
 SELECT *
 FROM crosstab(
@@ -606,14 +606,14 @@ SELECT * FROM crosstab(
 </programlisting>
 
 <programlisting>
-CREATE TABLE cth (rowid text, rowdt timestamp, attribute text, val text);
-INSERT INTO cth VALUES ('test1', '01 March 2003', 'temperature',    '42');
-INSERT INTO cth VALUES ('test1', '01 March 2003', 'test_result',    'PASS');
-INSERT INTO cth VALUES ('test1', '01 March 2003', 'volts',          '2.6987');
-INSERT INTO cth VALUES ('test2', '02 March 2003', 'temperature',    '53');
-INSERT INTO cth VALUES ('test2', '02 March 2003', 'test_result',    'FAIL');
-INSERT INTO cth VALUES ('test2', '02 March 2003', 'test_startdate', '01 March 2003');
-INSERT INTO cth VALUES ('test2', '02 March 2003', 'volts',          '3.1234');
+CREATE TABLE cth(rowid text, rowdt timestamp, attribute text, val text);
+INSERT INTO cth VALUES('test1','01 March 2003','temperature','42');
+INSERT INTO cth VALUES('test1','01 March 2003','test_result','PASS');
+INSERT INTO cth VALUES('test1','01 March 2003','volts','2.6987');
+INSERT INTO cth VALUES('test2','02 March 2003','temperature','53');
+INSERT INTO cth VALUES('test2','02 March 2003','test_result','FAIL');
+INSERT INTO cth VALUES('test2','02 March 2003','test_startdate','01 March 2003');
+INSERT INTO cth VALUES('test2','02 March 2003','volts','3.1234');
 
 SELECT * FROM crosstab
 (
@@ -784,17 +784,17 @@ SELECT * FROM connectby('connectby_tree', 'keyid', 'parent_keyid', 'pos', 'row2'
     <para>
      Here is an example:
 <programlisting>
-CREATE TABLE connectby_tree (keyid text, parent_keyid text, pos int);
+CREATE TABLE connectby_tree(keyid text, parent_keyid text, pos int);
 
-INSERT INTO connectby_tree VALUES ('row1', NULL,   0);
-INSERT INTO connectby_tree VALUES ('row2', 'row1', 0);
-INSERT INTO connectby_tree VALUES ('row3', 'row1', 0);
-INSERT INTO connectby_tree VALUES ('row4', 'row2', 1);
-INSERT INTO connectby_tree VALUES ('row5', 'row2', 0);
-INSERT INTO connectby_tree VALUES ('row6', 'row4', 0);
-INSERT INTO connectby_tree VALUES ('row7', 'row3', 0);
-INSERT INTO connectby_tree VALUES ('row8', 'row6', 0);
-INSERT INTO connectby_tree VALUES ('row9', 'row5', 0);
+INSERT INTO connectby_tree VALUES('row1',NULL, 0);
+INSERT INTO connectby_tree VALUES('row2','row1', 0);
+INSERT INTO connectby_tree VALUES('row3','row1', 0);
+INSERT INTO connectby_tree VALUES('row4','row2', 1);
+INSERT INTO connectby_tree VALUES('row5','row2', 0);
+INSERT INTO connectby_tree VALUES('row6','row4', 0);
+INSERT INTO connectby_tree VALUES('row7','row3', 0);
+INSERT INTO connectby_tree VALUES('row8','row6', 0);
+INSERT INTO connectby_tree VALUES('row9','row5', 0);
 
 -- with branch, without orderby_fld (order of results is not guaranteed)
 SELECT * FROM connectby('connectby_tree', 'keyid', 'parent_keyid', 'row2', 0, '~')

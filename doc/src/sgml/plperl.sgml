@@ -125,7 +125,7 @@ $$ LANGUAGE plperl;
    could be defined as:
 
 <programlisting>
-CREATE FUNCTION perl_max(integer, integer) RETURNS integer AS $$
+CREATE FUNCTION perl_max (integer, integer) RETURNS integer AS $$
     if ($_[0] &gt; $_[1]) { return $_[0]; }
     return $_[1];
 $$ LANGUAGE plperl;
@@ -156,7 +156,7 @@ $$ LANGUAGE plperl;
    rather than a null value:
 
 <programlisting>
-CREATE FUNCTION perl_max(integer, integer) RETURNS integer AS $$
+CREATE FUNCTION perl_max (integer, integer) RETURNS integer AS $$
     my ($x, $y) = @_;
     if (not defined $x) {
         return undef if not defined $y;
@@ -565,7 +565,7 @@ SELECT * FROM test_munge();
 <programlisting>
 CREATE TYPE foo_type AS (the_num INTEGER, the_text TEXT);
 
-CREATE OR REPLACE FUNCTION lotsa_md5(INTEGER) RETURNS SETOF foo_type AS $$
+CREATE OR REPLACE FUNCTION lotsa_md5 (INTEGER) RETURNS SETOF foo_type AS $$
     use Digest::MD5 qw(md5_hex);
     my $file = '/usr/share/dict/words';
     my $t = localtime;

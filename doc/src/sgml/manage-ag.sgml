@@ -464,7 +464,7 @@ CREATE TABLESPACE fastspace LOCATION '/ssd1/postgresql/data';
    parameter to the relevant command. For example, the following creates
    a table in the tablespace <literal>space1</literal>:
 <programlisting>
-CREATE TABLE foo (i int) TABLESPACE space1;
+CREATE TABLE foo(i int) TABLESPACE space1;
 </programlisting>
   </para>
 
@@ -472,7 +472,7 @@ CREATE TABLE foo (i int) TABLESPACE space1;
    Alternatively, use the <xref linkend="guc-default-tablespace"/> parameter:
 <programlisting>
 SET default_tablespace = space1;
-CREATE TABLE foo (i int);
+CREATE TABLE foo(i int);
 </programlisting>
    When <varname>default_tablespace</varname> is set to anything but an empty
    string, it supplies an implicit <literal>TABLESPACE</literal> clause for

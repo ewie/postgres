@@ -244,7 +244,7 @@ AND
    If either of this pair of elements is null, the result of the
    row comparison is unknown (null); otherwise comparison of this pair
    of elements determines the result.  For example,
-   <literal>ROW(1, 2, NULL) &lt; ROW(1, 3, 0)</literal>
+   <literal>ROW(1,2,NULL) &lt; ROW(1,3,0)</literal>
    yields true, not null, because the third pair of elements are not
    considered.
   </para>

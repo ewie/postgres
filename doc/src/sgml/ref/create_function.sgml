@@ -676,9 +676,9 @@ CREATE FUNCTION foo(int, int default 42) ...
     parenthesized type modifiers (e.g., the precision field for
     type <type>numeric</type>) are discarded by <command>CREATE FUNCTION</command>.
     Thus for example
-    <literal>CREATE FUNCTION foo(varchar(10)) ...</literal>
+    <literal>CREATE FUNCTION foo (varchar(10)) ...</literal>
     is exactly the same as
-    <literal>CREATE FUNCTION foo(varchar) ...</literal>.
+    <literal>CREATE FUNCTION foo (varchar) ...</literal>.
    </para>
 
    <para>
@@ -760,7 +760,7 @@ SELECT * FROM dup(42);
    Another way to return multiple columns is to use a <literal>TABLE</literal>
    function:
 <programlisting>
-CREATE FUNCTION dup(int) RETURNS TABLE (f1 int, f2 text)
+CREATE FUNCTION dup(int) RETURNS TABLE(f1 int, f2 text)
     AS $$ SELECT $1, CAST($1 AS text) || ' is text' $$
     LANGUAGE SQL;
 

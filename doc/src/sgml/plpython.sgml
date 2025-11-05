@@ -84,7 +84,7 @@ $$ LANGUAGE plpython3u;
    defined as:
 
 <programlisting>
-CREATE FUNCTION pymax(a integer, b integer)
+CREATE FUNCTION pymax (a integer, b integer)
   RETURNS integer
 AS $$
   if a &gt; b:
@@ -284,7 +284,7 @@ $$ LANGUAGE plpython3u;
    we could check for null inputs in the function body:
 
 <programlisting>
-CREATE FUNCTION pymax(a integer, b integer)
+CREATE FUNCTION pymax (a integer, b integer)
   RETURNS integer
 AS $$
   if (a is None) or (b is None):
@@ -384,7 +384,7 @@ CREATE TABLE employee (
   age integer
 );
 
-CREATE FUNCTION overpaid(e employee)
+CREATE FUNCTION overpaid (e employee)
   RETURNS boolean
 AS $$
   if e["salary"] &gt; 200000:
@@ -421,7 +421,7 @@ CREATE TYPE named_value AS (
        example:
 
 <programlisting>
-CREATE FUNCTION make_pair(name text, value integer)
+CREATE FUNCTION make_pair (name text, value integer)
   RETURNS named_value
 AS $$
   return ( name, value )
@@ -448,7 +448,7 @@ $$ LANGUAGE plpython3u;
        with the column name as key. Example:
 
 <programlisting>
-CREATE FUNCTION make_pair(name text, value integer)
+CREATE FUNCTION make_pair (name text, value integer)
   RETURNS named_value
 AS $$
   return { "name": name, "value": value }
@@ -471,7 +471,7 @@ $$ LANGUAGE plpython3u;
        Example:
 
 <programlisting>
-CREATE FUNCTION make_pair(name text, value integer)
+CREATE FUNCTION make_pair (name text, value integer)
   RETURNS named_value
 AS $$
   class named_value:
@@ -539,7 +539,7 @@ CREATE TYPE greeting AS (
      <listitem>
       <para>
 <programlisting>
-CREATE FUNCTION greet(how text)
+CREATE FUNCTION greet (how text)
   RETURNS SETOF greeting
 AS $$
   # return tuple containing lists as composite types
@@ -557,7 +557,7 @@ $$ LANGUAGE plpython3u;
      <listitem>
       <para>
 <programlisting>
-CREATE FUNCTION greet(how text)
+CREATE FUNCTION greet (how text)
   RETURNS SETOF greeting
 AS $$
   class producer:
@@ -587,7 +587,7 @@ $$ LANGUAGE plpython3u;
      <listitem>
       <para>
 <programlisting>
-CREATE FUNCTION greet(how text)
+CREATE FUNCTION greet (how text)
   RETURNS SETOF greeting
 AS $$
   for who in [ "World", "PostgreSQL", "PL/Python" ]:
@@ -1130,7 +1130,7 @@ $$ LANGUAGE plpython3u;
 <programlisting>
 CREATE FUNCTION try_adding_joe() RETURNS text AS $$
     try:
-        plpy.execute("INSERT INTO users (username) VALUES ('joe')")
+        plpy.execute("INSERT INTO users(username) VALUES ('joe')")
     except plpy.SPIError:
         return "something went wrong"
     else:

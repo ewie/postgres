@@ -73,7 +73,7 @@ postgres=# SELECT * FROM pg_logical_slot_get_changes('regression_slot', NULL, NU
 -----+-----+------
 (0 rows)
 
-postgres=# CREATE TABLE data (id serial PRIMARY KEY, data text);
+postgres=# CREATE TABLE data(id serial PRIMARY KEY, data text);
 CREATE TABLE
 
 postgres=# -- DDL isn't replicated, so all you'll see is the transaction
@@ -92,8 +92,8 @@ postgres=# SELECT * FROM pg_logical_slot_get_changes('regression_slot', NULL, NU
 (0 rows)
 
 postgres=# BEGIN;
-postgres=*# INSERT INTO data (data) VALUES ('1');
-postgres=*# INSERT INTO data (data) VALUES ('2');
+postgres=*# INSERT INTO data(data) VALUES('1');
+postgres=*# INSERT INTO data(data) VALUES('2');
 postgres=*# COMMIT;
 
 postgres=# SELECT * FROM pg_logical_slot_get_changes('regression_slot', NULL, NULL);
@@ -105,7 +105,7 @@ postgres=# SELECT * FROM pg_logical_slot_get_changes('regression_slot', NULL, NU
  0/0BA5A8A8 | 10298 | COMMIT 10298
 (4 rows)
 
-postgres=# INSERT INTO data (data) VALUES ('3');
+postgres=# INSERT INTO data(data) VALUES('3');
 
 postgres=# -- You can also peek ahead in the change stream without consuming changes
 postgres=# SELECT * FROM pg_logical_slot_peek_changes('regression_slot', NULL, NULL);
@@ -160,7 +160,7 @@ Example 1:
 $ pg_recvlogical -d postgres --slot=test --create-slot
 $ pg_recvlogical -d postgres --slot=test --start -f -
 <keycombo action="simul"><keycap>Control</keycap><keycap>Z</keycap></keycombo>
-$ psql -d postgres -c "INSERT INTO data (data) VALUES ('4');"
+$ psql -d postgres -c "INSERT INTO data(data) VALUES('4');"
 $ fg
 BEGIN 693
 table public.data: INSERT: id[integer]:4 data[text]:'4'
@@ -172,7 +172,7 @@ Example 2:
 $ pg_recvlogical -d postgres --slot=test --create-slot --enable-two-phase
 $ pg_recvlogical -d postgres --slot=test --start -f -
 <keycombo action="simul"><keycap>Control</keycap><keycap>Z</keycap></keycombo>
-$ psql -d postgres -c "BEGIN; INSERT INTO data (data) VALUES ('5'); PREPARE TRANSACTION 'test';"
+$ psql -d postgres -c "BEGIN;INSERT INTO data(data) VALUES('5');PREPARE TRANSACTION 'test';"
 $ fg
 BEGIN 694
 table public.data: INSERT: id[integer]:5 data[text]:'5'
@@ -196,7 +196,7 @@ $ pg_recvlogical -d postgres --slot=test --drop-slot
   </para>
 <programlisting>
 postgres=# BEGIN;
-postgres=*# INSERT INTO data (data) VALUES ('5');
+postgres=*# INSERT INTO data(data) VALUES('5');
 postgres=*# PREPARE TRANSACTION 'test_prepared1';
 
 postgres=# SELECT * FROM pg_logical_slot_get_changes('regression_slot', NULL, NULL);
@@ -216,7 +216,7 @@ postgres=# SELECT * from pg_logical_slot_get_changes('regression_slot', NULL, NU
 
 postgres=#-- you can also rollback a prepared transaction
 postgres=# BEGIN;
-postgres=*# INSERT INTO data (data) VALUES ('6');
+postgres=*# INSERT INTO data(data) VALUES('6');
 postgres=*# PREPARE TRANSACTION 'test_prepared2';
 postgres=# SELECT * from pg_logical_slot_get_changes('regression_slot', NULL, NULL);
     lsn     | xid |                          data
@@ -830,7 +830,7 @@ typedef void (*LogicalOutputPluginInit) (struct OutputPluginCallbacks *cb);
      provided catalog tables using
 <programlisting>
 ALTER TABLE user_catalog_table SET (user_catalog_table = true);
-CREATE TABLE another_catalog_table (data text) WITH (user_catalog_table = true);
+CREATE TABLE another_catalog_table(data text) WITH (user_catalog_table = true);
 </programlisting>
      Note that access to user catalog tables or regular system catalog tables
      in the output plugins has to be done via the <literal>systable_*</literal>

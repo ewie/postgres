@@ -388,7 +388,7 @@ CREATE EVENT TRIGGER noddl ON ddl_command_start
  noddl | ddl_command_start | dim   | enabled | noddl    |
 (1 row)
 
-=# CREATE TABLE foo (id serial);
+=# CREATE TABLE foo(id serial);
 ERROR:  command "CREATE TABLE" denied
 </screen>
    </para>

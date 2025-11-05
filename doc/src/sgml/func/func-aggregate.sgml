@@ -350,7 +350,7 @@
         appear in the array in that order rather than in the input order.
        </para>
        <para>
-        <literal>SELECT json_arrayagg(v) FROM (VALUES (2), (1)) t(v)</literal>
+        <literal>SELECT json_arrayagg(v) FROM (VALUES(2),(1)) t(v)</literal>
         <returnvalue>[2, 1]</returnvalue>
        </para></entry>
        <entry>No</entry>
@@ -1393,7 +1393,7 @@ SELECT count(*) FROM sometable;
  Bar   | Sport |  5
 (4 rows)
 
-<prompt>=&gt;</prompt> <userinput>SELECT make, model, GROUPING (make, model), sum(sales) FROM items_sold GROUP BY ROLLUP (make, model);</userinput>
+<prompt>=&gt;</prompt> <userinput>SELECT make, model, GROUPING(make,model), sum(sales) FROM items_sold GROUP BY ROLLUP(make,model);</userinput>
  make  | model | grouping | sum
 -------+-------+----------+-----
  Foo   | GT    |        0 | 10

@@ -458,7 +458,7 @@ UPDATE summary s SET (sum_x, sum_y, avg_x, avg_y) =
 BEGIN;
 -- other operations
 SAVEPOINT sp1;
-INSERT INTO wines VALUES ('Chateau Lafite 2003', '24');
+INSERT INTO wines VALUES('Chateau Lafite 2003', '24');
 -- Assume the above fails because of a unique key violation,
 -- so now we issue these commands:
 ROLLBACK TO sp1;

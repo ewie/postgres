@@ -218,9 +218,9 @@ SELECT (my_func(...)).field FROM ...
   First, inserting or updating a whole column:
 
 <programlisting>
-INSERT INTO mytab (complex_col) VALUES ((1.1, 2.2));
+INSERT INTO mytab (complex_col) VALUES((1.1,2.2));
 
-UPDATE mytab SET complex_col = ROW(1.1, 2.2) WHERE ...;
+UPDATE mytab SET complex_col = ROW(1.1,2.2) WHERE ...;
 </programlisting>
 
   The first example omits <literal>ROW</literal>, the second uses it; we
@@ -244,7 +244,7 @@ UPDATE mytab SET complex_col.r = (complex_col).r + 1 WHERE ...;
   And we can specify subfields as targets for <command>INSERT</command>, too:
 
 <programlisting>
-INSERT INTO mytab (complex_col.r, complex_col.i) VALUES (1.1, 2.2);
+INSERT INTO mytab (complex_col.r, complex_col.i) VALUES(1.1, 2.2);
 </programlisting>
 
   Had we not supplied values for all the subfields of the column, the
