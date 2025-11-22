@@ -5442,7 +5442,7 @@ match_previous_words(int pattern_id,
 	else if (TailMatchesCS("\\dew*"))
 		COMPLETE_WITH_QUERY(Query_for_list_of_fdws);
 	else if (TailMatchesCS("\\df*"))
-		COMPLETE_WITH_VERSIONED_SCHEMA_QUERY(Query_for_list_of_functions);
+		COMPLETE_WITH_SCHEMA_QUERY(Query_for_list_of_routines);
 	else if (HeadMatchesCS("\\df*"))
 		COMPLETE_WITH_SCHEMA_QUERY(Query_for_list_of_datatypes);
 
@@ -6016,6 +6016,8 @@ _complete_from_query(const char *simple_query,
 		/* Limit the number of records in the result */
 		appendPQExpBuffer(&query_buffer, "\nLIMIT %d",
 						  completion_max_records);
+
+//		printf("\n\n---\n%s\n---\n\n", query_buffer.data);
 
 		/* Finally, we can issue the query */
 		result = exec_query(query_buffer.data);
