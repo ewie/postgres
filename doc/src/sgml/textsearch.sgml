@@ -1299,8 +1299,9 @@ ts_headline(<optional> <replaceable class="parameter">config</replaceable> <type
 
    <para>
     If an <replaceable>options</replaceable> string is specified it must
-    consist of a comma-separated list of one or more
-    <replaceable>option</replaceable><literal>=</literal><replaceable>value</replaceable> pairs.
+    consist of a list of one or more
+    <replaceable>option</replaceable><literal>=</literal><replaceable>value</replaceable> pairs
+    separated by comma or whitespace.
     The available options are:
 
     <itemizedlist  spacing="compact" mark="bullet">
