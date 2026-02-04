@@ -126,15 +126,9 @@ create_ctas_internal(List *attrList, IntoClause *into)
 		if (list_length(attrList) > rel->rd_att->natts)
 		{
 			ListCell   *c;
-			int			skip = rel->rd_att->natts;
 
-			foreach(c, attrList)
+			for_each_from(c, attrList, rel->rd_att->natts)
 			{
-				if (skip > 0)
-				{
-					skip--;
-					continue;
-				}
 				atcmd = makeNode(AlterTableCmd);
 				atcmd->subtype = AT_AddColumnToView;
 				atcmd->def = (Node *) lfirst(c);
