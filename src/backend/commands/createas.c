@@ -344,8 +344,8 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 
 			return address;
 		}
-
-		return InvalidObjectAddress;
+		else
+			return InvalidObjectAddress;
 	}
 
 	/*
