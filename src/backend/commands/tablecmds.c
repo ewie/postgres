@@ -16646,9 +16646,9 @@ ATPrepSetTableSpace(AlteredTableInfo *tab, Relation rel, const char *tablespacen
 {
 	Oid			tablespaceId;
 
-	if (tablespacename != NULL && tablespacename[0] == '\0')
+	if (tablespacename != NULL && strcmp(tablespacename, AT_TABLESPACE_DEFAULT) == 0)
 	{
-		/* Use default tablespace if name is empty string */
+		/* Use default tablespace */
 		tablespaceId = GetDefaultTablespace(rel->rd_rel->relpersistence, rel->rd_rel->relispartition);
 		if (!OidIsValid(tablespaceId))
 			tablespaceId = MyDatabaseTableSpace;
