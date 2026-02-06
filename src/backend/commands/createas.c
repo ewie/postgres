@@ -408,7 +408,9 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 	if (is_matview)
 	{
 		if (into->keepData)
-			elog(ERROR, "must not specify WITH OLD DATA when creating a new materialized view");
+			ereport(ERROR,
+					(errcode(ERRCODE_SYNTAX_ERROR),
+					errmsg("must not specify WITH OLD DATA when creating a new materialized view")));
 
 		do_refresh = !into->skipData;
 		into->skipData = true;
