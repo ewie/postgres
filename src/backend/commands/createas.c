@@ -34,6 +34,7 @@
 #include "commands/matview.h"
 #include "commands/prepare.h"
 #include "commands/tablecmds.h"
+#include "commands/tablespace.h"
 #include "commands/view.h"
 #include "executor/execdesc.h"
 #include "executor/executor.h"
@@ -152,8 +153,29 @@ create_ctas_internal(List *attrList, IntoClause *into)
 		/* tablespace */
 		atcmd = makeNode(AlterTableCmd);
 		atcmd->subtype = AT_SetTableSpace;
-		/* use empty string to specify default tablespace */
-		atcmd->name = into->tableSpaceName ? into->tableSpaceName : AT_TABLESPACE_DEFAULT;
+		if (into->tableSpaceName)
+			atcmd->name = into->tableSpaceName;
+		else
+		{
+			Oid spcOid;
+			char *spcName;
+
+			/*
+			 * Must use the default tablespace if no explicit tablespace is
+			 * specified.
+			 *
+			 * TODO: Do we need a lock on the tablespace?
+			 */
+			spcOid = GetDefaultTablespace(RELPERSISTENCE_PERMANENT, false);
+			if (!OidIsValid(spcOid))
+				spcOid = MyDatabaseTableSpace;
+
+			spcName = get_tablespace_name(spcOid);
+			if (!spcName) /* should not happen */
+				elog(ERROR, "could not find tuple for tablespace %u", spcOid);
+
+			atcmd->name = spcName;
+		}
 		atcmds = lappend(atcmds, atcmd);
 
 		/* storage options */
