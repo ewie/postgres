@@ -21,12 +21,6 @@
 #include "storage/lockdefs.h"
 #include "utils/relcache.h"
 
-/*
- * Tablespace name that instructs ALTER TABLE to assign the default
- * tablespace.
- */
-#define AT_TABLESPACE_DEFAULT ""
-
 typedef struct AlterTableUtilityContext AlterTableUtilityContext;	/* avoid including
 																	 * tcop/utility.h here */
 
