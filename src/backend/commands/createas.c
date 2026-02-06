@@ -153,7 +153,7 @@ create_ctas_internal(List *attrList, IntoClause *into)
 		atcmd = makeNode(AlterTableCmd);
 		atcmd->subtype = AT_SetTableSpace;
 		/* use empty string to specify default tablespace */
-		atcmd->name = into->tableSpaceName ? into->tableSpaceName : "";
+		atcmd->name = into->tableSpaceName ? into->tableSpaceName : AT_TABLESPACE_DEFAULT;
 		atcmds = lappend(atcmds, atcmd);
 
 		/* storage options */
