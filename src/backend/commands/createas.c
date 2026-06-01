@@ -161,6 +161,7 @@ create_ctas_nodata(List *tlist, IntoClause *into)
 	ListCell   *t,
 			   *lc;
 	bool		is_matview = (into->viewQuery != NULL);
+	Oid			matviewOid = InvalidOid;
 
 	/*
 	 * Build list of ColumnDefs from non-junk elements of the tlist.  If a
@@ -215,22 +216,18 @@ create_ctas_nodata(List *tlist, IntoClause *into)
 				(errcode(ERRCODE_SYNTAX_ERROR),
 				 errmsg("too many column names were specified")));
 
-	/* Check if an existing materialized view needs to be replaced */
+	/* Get the existing matview to be replaced */
 	if (is_matview && into->replace)
-	{
-		Oid			matviewOid = InvalidOid;
-
-		/* TODO: Move this into create_ctas_replace? */
 		(void) RangeVarGetAndCheckCreationNamespace(into->rel,
 													AccessExclusiveLock,
 													&matviewOid);
 
-		if (OidIsValid(matviewOid))
-			return create_ctas_replace(attrList, into, matviewOid);
-	}
-
-	/* Create the relation definition using the ColumnDef list */
-	return create_ctas_internal(attrList, into);
+	if (OidIsValid(matviewOid))
+		/* Replace the existing matview */
+		return create_ctas_replace(attrList, into, matviewOid);
+	else
+		/* Create the relation definition using the ColumnDef list */
+		return create_ctas_internal(attrList, into);
 }
 
 
