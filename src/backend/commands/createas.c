@@ -73,6 +73,8 @@ static bool intorel_receive(TupleTableSlot *slot, DestReceiver *self);
 static void intorel_shutdown(DestReceiver *self);
 static void intorel_destroy(DestReceiver *self);
 
+static bool CreateTableAsRelReplaceable(CreateTableAsStmt *ctas);
+
 
 /*
  * create_ctas_internal
@@ -356,11 +358,13 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 	DestReceiver *dest;
 	ObjectAddress address;
 
-	/* Check if the relation exists or not */
-	if (CreateTableAsRelExists(stmt))
+	/*
+	 * Check if the relation exists or not.  An existing materialized view can
+	 * be replaced.
+	 */
+	if (is_matview && into->replace)
 	{
-		/* An existing materialized view can be replaced. */
-		if (is_matview && into->replace)
+		if (CreateTableAsRelReplaceable(stmt))
 		{
 			/* Change the relation to match the new query and other options. */
 			address = create_ctas_nodata(query->targetList, into);
@@ -383,9 +387,9 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 
 			return address;
 		}
-		else
-			return InvalidObjectAddress;
 	}
+	else if (CreateTableAsRelExists(stmt))
+		return InvalidObjectAddress;
 
 	/*
 	 * Create the tuple receiver object and insert info it will need
@@ -558,15 +562,14 @@ CreateTableAsRelExists(CreateTableAsStmt *ctas)
 	oldrelid = get_relname_relid(into->rel->relname, nspid);
 	if (OidIsValid(oldrelid))
 	{
-		if (!ctas->if_not_exists && !into->replace)
+		if (!ctas->if_not_exists)
 			ereport(ERROR,
 					(errcode(ERRCODE_DUPLICATE_TABLE),
 					 errmsg("relation \"%s\" already exists",
 							into->rel->relname)));
 
 		/*
-		 * The relation exists and IF NOT EXISTS or OR REPLACE has been
-		 * specified.
+		 * The relation exists and IF NOT EXISTS has been specified.
 		 *
 		 * If we are in an extension script, insist that the pre-existing
 		 * object be a member of the extension, to avoid security risks.
@@ -574,12 +577,54 @@ CreateTableAsRelExists(CreateTableAsStmt *ctas)
 		ObjectAddressSet(address, RelationRelationId, oldrelid);
 		checkMembershipInCurrentExtension(&address);
 
-		if (ctas->if_not_exists)
-			/* OK to skip */
-			ereport(NOTICE,
+		/* OK to skip */
+		ereport(NOTICE,
+				(errcode(ERRCODE_DUPLICATE_TABLE),
+				 errmsg("relation \"%s\" already exists, skipping",
+						into->rel->relname)));
+		return true;
+	}
+
+	/* Relation does not exist, it can be created */
+	return false;
+}
+
+/*
+ * CreateTableAsRelReplaceable --- check existence of replaceable relation for
+ * CreateTableAsStmt
+ *
+ * Utility wrapper checking if the relation pending for creation in this
+ * CreateTableAsStmt query already exists or not.  Returns true if the relation
+ * exists and should be replaced, otherwise false.
+ */
+static bool
+CreateTableAsRelReplaceable(CreateTableAsStmt *ctas)
+{
+	Oid			nspid;
+	Oid			oldrelid;
+	ObjectAddress address;
+	IntoClause *into = ctas->into;
+
+	nspid = RangeVarGetCreationNamespace(into->rel);
+
+	oldrelid = get_relname_relid(into->rel->relname, nspid);
+	if (OidIsValid(oldrelid))
+	{
+		if (!into->replace)
+			ereport(ERROR,
 					(errcode(ERRCODE_DUPLICATE_TABLE),
-					 errmsg("relation \"%s\" already exists, skipping",
+					 errmsg("relation \"%s\" already exists",
 							into->rel->relname)));
+
+		/*
+		 * The relation exists and OR REPLACE has been specified.
+		 *
+		 * If we are in an extension script, insist that the pre-existing
+		 * object be a member of the extension, to avoid security risks.
+		 */
+		ObjectAddressSet(address, RelationRelationId, oldrelid);
+		checkMembershipInCurrentExtension(&address);
+
 		return true;
 	}
 
