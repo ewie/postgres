@@ -303,8 +303,6 @@ create_ctas_replace(List *attrList, IntoClause *into, Oid matviewOid)
 		/*
 		 * Must use the default tablespace if no explicit tablespace is
 		 * specified.
-		 *
-		 * TODO: Do we need a lock on the tablespace?
 		 */
 		spcOid = GetDefaultTablespace(RELPERSISTENCE_PERMANENT, false);
 		if (!OidIsValid(spcOid))
