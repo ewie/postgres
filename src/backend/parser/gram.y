@@ -250,6 +250,7 @@ static Node *makeRecursiveViewSelect(char *relname, List *aliases, Node *query);
 	Alias	   *alias;
 	RangeVar   *range;
 	IntoClause *into;
+	WithDataOption withdata;
 	WithClause *with;
 	InferClause	*infer;
 	OnConflictClause *onconflict;
@@ -358,6 +359,7 @@ static Node *makeRecursiveViewSelect(char *relname, List *aliases, Node *query);
 				opt_grant_grant_option
 				opt_nowait opt_if_exists opt_with_data
 				opt_transaction_chain
+%type <withdata> opt_with_no_or_old_data
 %type <list>	grant_role_opt_list
 %type <defelt>	grant_role_opt
 %type <node>	grant_role_opt_value
@@ -5030,6 +5032,13 @@ opt_with_data:
 			| /*EMPTY*/								{ $$ = true; }
 		;
 
+opt_with_no_or_old_data:
+			WITH DATA_P								{ $$ = WITHDATA_DEFAULT; }
+			| WITH NO DATA_P						{ $$ = WITHDATA_NONE; }
+			| WITH OLD DATA_P						{ $$ = WITHDATA_OLD; }
+			| /*EMPTY*/								{ $$ = WITHDATA_DEFAULT; }
+		;
+
 
 /*****************************************************************************
  *
@@ -5067,7 +5076,7 @@ CreateMatViewStmt:
 					$8->skipData = !($11);
 					$$ = (Node *) ctas;
 				}
-		| CREATE OR REPLACE OptNoLog MATERIALIZED VIEW create_mv_target AS SelectStmt opt_with_data
+		| CREATE OR REPLACE OptNoLog MATERIALIZED VIEW create_mv_target AS SelectStmt opt_with_no_or_old_data
 				{
 					CreateTableAsStmt *ctas = makeNode(CreateTableAsStmt);
 
@@ -5078,23 +5087,8 @@ CreateMatViewStmt:
 					ctas->if_not_exists = false;
 					/* cram additional flags into the IntoClause */
 					$7->rel->relpersistence = $4;
-					$7->skipData = !($10);
-					$7->replace = true;
-					$$ = (Node *) ctas;
-				}
-		| CREATE OR REPLACE OptNoLog MATERIALIZED VIEW create_mv_target AS SelectStmt WITH OLD DATA_P
-				{
-					CreateTableAsStmt *ctas = makeNode(CreateTableAsStmt);
-
-					ctas->query = $9;
-					ctas->into = $7;
-					ctas->objtype = OBJECT_MATVIEW;
-					ctas->is_select_into = false;
-					ctas->if_not_exists = false;
-					/* cram additional flags into the IntoClause */
-					$7->rel->relpersistence = $4;
-					$7->skipData = false;
-					$7->keepData = true;
+					$7->skipData = $10 == WITHDATA_NONE;
+					$7->keepData = $10 == WITHDATA_OLD;
 					$7->replace = true;
 					$$ = (Node *) ctas;
 				}

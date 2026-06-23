@@ -4595,5 +4595,12 @@ typedef struct WaitStmt
 	List	   *options;		/* List of DefElem nodes */
 } WaitStmt;
 
+/* WITH DATA option of CREATE MATERIALIZED VIEW */
+typedef enum WithDataOption
+{
+	WITHDATA_DEFAULT,			/* WITH DATA */
+	WITHDATA_NONE,				/* WITH NO DATA */
+	WITHDATA_OLD,				/* WITH OLD DATA */
+} WithDataOption;
 
 #endif							/* PARSENODES_H */
