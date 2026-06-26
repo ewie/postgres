@@ -371,7 +371,7 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 			 * Refresh the materialized view with a fake statement unless we
 			 * must keep the old data.
 			 */
-			if (!into->keepData)
+			if (into->data != WITHDATA_OLD)
 			{
 				RefreshMatViewStmt *refresh;
 
@@ -426,7 +426,7 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 	 */
 	if (is_matview)
 	{
-		if (into->keepData)
+		if (into->data == WITHDATA_OLD)
 			ereport(ERROR,
 					(errcode(ERRCODE_SYNTAX_ERROR),
 					 errmsg("must not specify WITH OLD DATA when creating a new materialized view")));

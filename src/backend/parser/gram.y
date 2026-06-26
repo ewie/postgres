@@ -5088,7 +5088,7 @@ CreateMatViewStmt:
 					/* cram additional flags into the IntoClause */
 					$7->rel->relpersistence = $4;
 					$7->skipData = $10 == WITHDATA_NONE;
-					$7->keepData = $10 == WITHDATA_OLD;
+					$7->data = $10;
 					$7->replace = true;
 					$$ = (Node *) ctas;
 				}
