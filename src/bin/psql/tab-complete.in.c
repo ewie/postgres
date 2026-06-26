@@ -4259,26 +4259,34 @@ match_previous_words(int pattern_id,
 	else if (Matches("CREATE", "MATERIALIZED") ||
 			 Matches("CREATE", "OR", "REPLACE", "MATERIALIZED"))
 		COMPLETE_WITH("VIEW");
-	/* Complete CREATE [ OR REPLACE ] MATERIALIZED VIEW <name> with AS or USING */
+
+	/*
+	 * Complete CREATE [ OR REPLACE ] MATERIALIZED VIEW <name> with AS or
+	 * USING
+	 */
 	else if (Matches("CREATE", "MATERIALIZED", "VIEW", MatchAny) ||
 			 Matches("CREATE", "OR", "REPLACE", "MATERIALIZED", "VIEW", MatchAny))
 		COMPLETE_WITH("AS", "USING");
 
 	/*
-	 * Complete CREATE [ OR REPLACE ] MATERIALIZED VIEW <name> USING with list of access
-	 * methods
+	 * Complete CREATE [ OR REPLACE ] MATERIALIZED VIEW <name> USING with list
+	 * of access methods
 	 */
 	else if (Matches("CREATE", "MATERIALIZED", "VIEW", MatchAny, "USING") ||
 			 Matches("CREATE", "OR", "REPLACE", "MATERIALIZED", "VIEW", MatchAny, "USING"))
 		COMPLETE_WITH_QUERY(Query_for_list_of_table_access_methods);
-	/* Complete CREATE [ OR REPLACE ] MATERIALIZED VIEW <name> USING <access method> with AS */
+
+	/*
+	 * Complete CREATE [ OR REPLACE ] MATERIALIZED VIEW <name> USING <access
+	 * method> with AS
+	 */
 	else if (Matches("CREATE", "MATERIALIZED", "VIEW", MatchAny, "USING", MatchAny) ||
 			 Matches("CREATE", "OR", "REPLACE", "MATERIALIZED", "VIEW", MatchAny, "USING", MatchAny))
 		COMPLETE_WITH("AS");
 
 	/*
-	 * Complete CREATE [ OR REPLACE ] MATERIALIZED VIEW <name> [USING <access method> ] AS
-	 * with "SELECT"
+	 * Complete CREATE [ OR REPLACE ] MATERIALIZED VIEW <name> [USING <access
+	 * method> ] AS with "SELECT"
 	 */
 	else if (Matches("CREATE", "MATERIALIZED", "VIEW", MatchAny, "AS") ||
 			 Matches("CREATE", "OR", "REPLACE", "MATERIALIZED", "VIEW", MatchAny, "AS") ||
