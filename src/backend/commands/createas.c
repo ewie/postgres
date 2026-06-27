@@ -250,20 +250,35 @@ create_ctas_replace(List *attrList, IntoClause *into, Oid matviewOid)
 	TupleDesc	descriptor;
 	Query	   *query;
 
+	/* Relation is already locked, but we must build a relcache entry. */
 	rel = relation_open(matviewOid, NoLock);
 
+	/* Make sure it *is* a matview. */
 	if (rel->rd_rel->relkind != RELKIND_MATVIEW)
 		ereport(ERROR,
 				errcode(ERRCODE_WRONG_OBJECT_TYPE),
 				errmsg("\"%s\" is not a materialized view",
 					   RelationGetRelationName(rel)));
 
+	/* Also check it's not in use already */
 	CheckTableNotInUse(rel, "CREATE OR REPLACE MATERIALIZED VIEW");
 
 	descriptor = BuildDescForRelation(attrList);
 	checkViewColumns(descriptor, rel->rd_att, true);
 
-	/* add new attributes */
+	/*
+	 * If new attributes have been added, we must add pg_attribute entries
+	 * for them.  It is convenient (although overkill) to use the ALTER
+	 * TABLE ADD COLUMN infrastructure for this.
+	 *
+	 * Note that we must do this before updating the query for the matview,
+	 * since the rules system requires that the correct matview columns be in
+	 * place when defining the new rules.
+	 *
+	 * Also note that ALTER TABLE doesn't run parse transformation on
+	 * AT_AddColumnToView commands.  The ColumnDef we supply must be ready
+	 * to execute as-is.
+	 */
 	if (list_length(attrList) > rel->rd_att->natts)
 	{
 		ListCell   *c;
@@ -278,10 +293,10 @@ create_ctas_replace(List *attrList, IntoClause *into, Oid matviewOid)
 	}
 
 	/*
-	 * The following alters access method, tablespace, and storage options.
+	 * Use ALTER TABLE to set access method, tablespace, and storage options.
 	 * When replacing an existing matview we need to alter the relation such
 	 * that the defaults apply as if they have not been specified at all by
-	 * the CREATE statement.
+	 * the CREATE OR REPLACE MATERIALIZED VIEW statement.
 	 */
 
 	/* access method */
@@ -322,18 +337,23 @@ create_ctas_replace(List *attrList, IntoClause *into, Oid matviewOid)
 	atcmd->def = (Node *) into->options;
 	atcmds = lappend(atcmds, atcmd);
 
+	/* EventTriggerAlterTableStart called by ProcessUtilitySlow */
 	AlterTableInternal(matviewOid, atcmds, true);
+
+	/* Make the new matview columns visible */
 	CommandCounterIncrement();
 
 	relation_close(rel, NoLock);
 	ObjectAddressSet(intoRelationAddr, RelationRelationId, matviewOid);
 
 	/*
-	 * Replace the "view" part of a materialized view.  StoreViewQuery
-	 * scribbles on tree, so make a copy.
+	 * Replace the "view" part of the matview.  StoreViewQuery scribbles on
+	 * tree, so make a copy.
 	 */
 	query = copyObject(into->viewQuery);
 	StoreViewQuery(intoRelationAddr.objectId, query, true);
+
+	/* Make the new matview query visible */
 	CommandCounterIncrement();
 
 	return intoRelationAddr;
