@@ -302,7 +302,8 @@ create_ctas_replace(List *attrList, IntoClause *into, Oid matviewOid)
 	/* access method */
 	atcmd = makeNode(AlterTableCmd);
 	atcmd->subtype = AT_SetAccessMethod;
-	atcmd->name = into->accessMethod ? into->accessMethod : default_table_access_method;
+	atcmd->name = into->accessMethod
+		? into->accessMethod : default_table_access_method;
 	atcmds = lappend(atcmds, atcmd);
 
 	/* tablespace */
