@@ -934,7 +934,7 @@ CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
   SELECT 1 AS c1, 2 AS c2, 3 AS c3, 4 AS c4,
          5 AS c5, 6 AS c6, 7 AS c7, null AS c8,
          null AS c9
-WITH OLD DATA;
+  WITH OLD DATA;
 SELECT c9 FROM mvtest_replace;
  c9 
 ----
