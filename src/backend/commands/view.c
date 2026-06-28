@@ -29,6 +29,8 @@
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
 
+static void checkViewColumns(TupleDesc newdesc, TupleDesc olddesc);
+
 /*---------------------------------------------------------------------
  * DefineVirtualRelation
  *
@@ -126,7 +128,7 @@ DefineVirtualRelation(RangeVar *relation, List *tlist, bool replace,
 		 * column list.
 		 */
 		descriptor = BuildDescForRelation(attrList);
-		checkViewColumns(descriptor, rel->rd_att, false);
+		checkViewColumns(descriptor, rel->rd_att);
 
 		/*
 		 * If new attributes have been added, we must add pg_attribute entries
@@ -260,8 +262,8 @@ DefineVirtualRelation(RangeVar *relation, List *tlist, bool replace,
  * added to generate specific complaints.  Also, we allow the new view to have
  * more columns than the old.
  */
-void
-checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool is_matview)
+static void
+checkViewColumns(TupleDesc newdesc, TupleDesc olddesc)
 {
 	int			i;
 
@@ -269,9 +271,7 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool is_matview)
 	{
 		ereport(ERROR,
 				errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-				(is_matview
-				 ? errmsg("cannot drop columns from materialized view")
-				 : errmsg("cannot drop columns from view")));
+				errmsg("cannot drop columns from view"));
 	}
 
 	for (i = 0; i < olddesc->natts; i++)
@@ -284,25 +284,17 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool is_matview)
 		{
 			ereport(ERROR,
 					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-					(is_matview
-					 ? errmsg("cannot drop columns from materialized view")
-					 : errmsg("cannot drop columns from view")));
+					errmsg("cannot drop columns from view"));
 		}
 
 		if (strcmp(NameStr(newattr->attname), NameStr(oldattr->attname)) != 0)
 		{
 			ereport(ERROR,
 					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-					(is_matview
-					 ? errmsg("cannot change name of materialized view column \"%s\" to \"%s\"",
+					errmsg("cannot change name of view column \"%s\" to \"%s\"",
 							  NameStr(oldattr->attname),
-							  NameStr(newattr->attname))
-					 : errmsg("cannot change name of view column \"%s\" to \"%s\"",
-							  NameStr(oldattr->attname),
-							  NameStr(newattr->attname))),
-					(is_matview
-					 ? errhint("Use ALTER MATERIALIZED VIEW ... RENAME COLUMN ... to change name of materialized view column instead.")
-					 : errhint("Use ALTER VIEW ... RENAME COLUMN ... to change name of view column instead.")));
+							  NameStr(newattr->attname)),
+					errhint("Use ALTER VIEW ... RENAME COLUMN ... to change name of view column instead."));
 		}
 
 		/*
@@ -315,19 +307,12 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool is_matview)
 		{
 			ereport(ERROR,
 					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-					(is_matview
-					 ? errmsg("cannot change data type of materialized view column \"%s\" from %s to %s",
+					errmsg("cannot change data type of view column \"%s\" from %s to %s",
 							  NameStr(oldattr->attname),
 							  format_type_with_typemod(oldattr->atttypid,
 													   oldattr->atttypmod),
 							  format_type_with_typemod(newattr->atttypid,
-													   newattr->atttypmod))
-					 : errmsg("cannot change data type of view column \"%s\" from %s to %s",
-							  NameStr(oldattr->attname),
-							  format_type_with_typemod(oldattr->atttypid,
-													   oldattr->atttypmod),
-							  format_type_with_typemod(newattr->atttypid,
-													   newattr->atttypmod))));
+													   newattr->atttypmod)));
 		}
 
 		/*
@@ -338,15 +323,10 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc, bool is_matview)
 		{
 			ereport(ERROR,
 					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-					(is_matview
-					 ? errmsg("cannot change collation of materialized view column \"%s\" from \"%s\" to \"%s\"",
+					errmsg("cannot change collation of view column \"%s\" from \"%s\" to \"%s\"",
 							  NameStr(oldattr->attname),
 							  get_collation_name(oldattr->attcollation),
-							  get_collation_name(newattr->attcollation))
-					 : errmsg("cannot change collation of view column \"%s\" from \"%s\" to \"%s\"",
-							  NameStr(oldattr->attname),
-							  get_collation_name(oldattr->attcollation),
-							  get_collation_name(newattr->attcollation))));
+							  get_collation_name(newattr->attcollation)));
 		}
 	}
 

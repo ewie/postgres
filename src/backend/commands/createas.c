@@ -264,7 +264,7 @@ create_ctas_replace(List *attrList, IntoClause *into, Oid matviewOid)
 	CheckTableNotInUse(rel, "CREATE OR REPLACE MATERIALIZED VIEW");
 
 	descriptor = BuildDescForRelation(attrList);
-	checkViewColumns(descriptor, rel->rd_att, true);
+	checkMatviewColumns(descriptor, rel->rd_att);
 
 	/*
 	 * If new attributes have been added, we must add pg_attribute entries
