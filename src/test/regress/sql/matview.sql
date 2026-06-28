@@ -459,3 +459,56 @@ CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
          null AS c9
 WITH OLD DATA;
 SELECT c9 FROM mvtest_replace;
+
+/*
+DROP MATERIALIZED VIEW mvtest_replace;
+CREATE MATERIALIZED VIEW mvtest_replace AS
+  SELECT a FROM generate_series(1, 2) a;
+CREATE UNIQUE INDEX ON mvtest_replace (a);
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 1 AS a FROM generate_series(1, 2)
+  WITH OLD DATA;
+SELECT a FROM mvtest_replace;
+REFRESH MATERIALIZED VIEW mvtest_replace;
+SELECT a FROM mvtest_replace;
+*/
+
+/*
+DROP MATERIALIZED VIEW mvtest_replace;
+CREATE DOMAIN mvtest_dom AS int
+  CONSTRAINT mvtest_dom_check CHECK (VALUE = 1);
+CREATE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 1::mvtest_dom AS a;
+ALTER DOMAIN mvtest_dom
+  DROP CONSTRAINT mvtest_dom_check;
+ALTER DOMAIN mvtest_dom
+  ADD CONSTRAINT mvtest_dom_check CHECK (VALUE = 2);
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 1::mvtest_dom AS a
+  WITH OLD DATA;
+SELECT a FROM mvtest_replace;
+*/
+
+-- Test constraint violation on WITH OLD DATA
+DROP MATERIALIZED VIEW mvtest_replace;
+CREATE DOMAIN mvtest_dom AS int
+  CONSTRAINT mvtest_dom_nn NOT NULL;
+CREATE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 1::mvtest_dom AS a;
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 2::mvtest_dom AS a, 3::mvtest_dom AS b
+  WITH OLD DATA; -- error: new column "b" cannot be null
+SELECT a FROM mvtest_replace;
+
+/*
+DROP MATERIALIZED VIEW mvtest_replace;
+CREATE DOMAIN mvtest_dom3 AS int
+  CONSTRAINT mvtest_dom3_check CHECK (VALUE = 1);
+CREATE DOMAIN mvtest_dom4 AS int
+  CONSTRAINT mvtest_dom4_check CHECK (VALUE = 2);
+CREATE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 1::mvtest_dom3 AS a;
+CREATE OR REPLACE MATERIALIZED VIEW mvtest_replace AS
+  SELECT 2::mvtest_dom4 AS a
+  WITH OLD DATA;
+*/
