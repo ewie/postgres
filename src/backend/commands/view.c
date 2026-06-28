@@ -268,11 +268,9 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc)
 	int			i;
 
 	if (newdesc->natts < olddesc->natts)
-	{
 		ereport(ERROR,
-				errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-				errmsg("cannot drop columns from view"));
-	}
+				(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
+				 errmsg("cannot drop columns from view")));
 
 	for (i = 0; i < olddesc->natts; i++)
 	{
@@ -281,21 +279,17 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc)
 
 		/* XXX msg not right, but we don't support DROP COL on view anyway */
 		if (newattr->attisdropped != oldattr->attisdropped)
-		{
 			ereport(ERROR,
-					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-					errmsg("cannot drop columns from view"));
-		}
+					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
+					 errmsg("cannot drop columns from view")));
 
 		if (strcmp(NameStr(newattr->attname), NameStr(oldattr->attname)) != 0)
-		{
 			ereport(ERROR,
-					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-					errmsg("cannot change name of view column \"%s\" to \"%s\"",
-						   NameStr(oldattr->attname),
-						   NameStr(newattr->attname)),
-					errhint("Use ALTER VIEW ... RENAME COLUMN ... to change name of view column instead."));
-		}
+					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
+					 errmsg("cannot change name of view column \"%s\" to \"%s\"",
+							NameStr(oldattr->attname),
+							NameStr(newattr->attname)),
+					 errhint("Use ALTER VIEW ... RENAME COLUMN ... to change name of view column instead.")));
 
 		/*
 		 * We cannot allow type, typmod, or collation to change, since these
@@ -304,30 +298,26 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc)
 		 */
 		if (newattr->atttypid != oldattr->atttypid ||
 			newattr->atttypmod != oldattr->atttypmod)
-		{
 			ereport(ERROR,
-					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-					errmsg("cannot change data type of view column \"%s\" from %s to %s",
-						   NameStr(oldattr->attname),
-						   format_type_with_typemod(oldattr->atttypid,
-													oldattr->atttypmod),
-						   format_type_with_typemod(newattr->atttypid,
-													newattr->atttypmod)));
-		}
+					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
+					 errmsg("cannot change data type of view column \"%s\" from %s to %s",
+							NameStr(oldattr->attname),
+							format_type_with_typemod(oldattr->atttypid,
+													 oldattr->atttypmod),
+							format_type_with_typemod(newattr->atttypid,
+													 newattr->atttypmod))));
 
 		/*
 		 * At this point, attcollations should be both valid or both invalid,
 		 * so applying get_collation_name unconditionally should be fine.
 		 */
 		if (newattr->attcollation != oldattr->attcollation)
-		{
 			ereport(ERROR,
-					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-					errmsg("cannot change collation of view column \"%s\" from \"%s\" to \"%s\"",
-						   NameStr(oldattr->attname),
-						   get_collation_name(oldattr->attcollation),
-						   get_collation_name(newattr->attcollation)));
-		}
+					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
+					 errmsg("cannot change collation of view column \"%s\" from \"%s\" to \"%s\"",
+							NameStr(oldattr->attname),
+							get_collation_name(oldattr->attcollation),
+							get_collation_name(newattr->attcollation))));
 	}
 
 	/*

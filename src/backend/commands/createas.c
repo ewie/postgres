@@ -75,7 +75,6 @@ static void intorel_destroy(DestReceiver *self);
 
 static bool CreateTableAsRelReplaceable(CreateTableAsStmt *ctas);
 
-
 /*
  * create_ctas_internal
  *
