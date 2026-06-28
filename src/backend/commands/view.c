@@ -292,8 +292,8 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc)
 			ereport(ERROR,
 					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					errmsg("cannot change name of view column \"%s\" to \"%s\"",
-							  NameStr(oldattr->attname),
-							  NameStr(newattr->attname)),
+						   NameStr(oldattr->attname),
+						   NameStr(newattr->attname)),
 					errhint("Use ALTER VIEW ... RENAME COLUMN ... to change name of view column instead."));
 		}
 
@@ -308,11 +308,11 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc)
 			ereport(ERROR,
 					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					errmsg("cannot change data type of view column \"%s\" from %s to %s",
-							  NameStr(oldattr->attname),
-							  format_type_with_typemod(oldattr->atttypid,
-													   oldattr->atttypmod),
-							  format_type_with_typemod(newattr->atttypid,
-													   newattr->atttypmod)));
+						   NameStr(oldattr->attname),
+						   format_type_with_typemod(oldattr->atttypid,
+													oldattr->atttypmod),
+						   format_type_with_typemod(newattr->atttypid,
+													newattr->atttypmod)));
 		}
 
 		/*
@@ -324,9 +324,9 @@ checkViewColumns(TupleDesc newdesc, TupleDesc olddesc)
 			ereport(ERROR,
 					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					errmsg("cannot change collation of view column \"%s\" from \"%s\" to \"%s\"",
-							  NameStr(oldattr->attname),
-							  get_collation_name(oldattr->attcollation),
-							  get_collation_name(newattr->attcollation)));
+						   NameStr(oldattr->attname),
+						   get_collation_name(oldattr->attcollation),
+						   get_collation_name(newattr->attcollation)));
 		}
 	}
 

@@ -1004,8 +1004,8 @@ checkMatviewColumns(TupleDesc newdesc, TupleDesc olddesc)
 			ereport(ERROR,
 					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					errmsg("cannot change name of materialized view column \"%s\" to \"%s\"",
-						  NameStr(oldattr->attname),
-						  NameStr(newattr->attname)),
+						   NameStr(oldattr->attname),
+						   NameStr(newattr->attname)),
 					errhint("Use ALTER MATERIALIZED VIEW ... RENAME COLUMN ... to change name of materialized view column instead."));
 		}
 
@@ -1020,11 +1020,11 @@ checkMatviewColumns(TupleDesc newdesc, TupleDesc olddesc)
 			ereport(ERROR,
 					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					errmsg("cannot change data type of materialized view column \"%s\" from %s to %s",
-							  NameStr(oldattr->attname),
-							  format_type_with_typemod(oldattr->atttypid,
-													   oldattr->atttypmod),
-							  format_type_with_typemod(newattr->atttypid,
-													   newattr->atttypmod)));
+						   NameStr(oldattr->attname),
+						   format_type_with_typemod(oldattr->atttypid,
+													oldattr->atttypmod),
+						   format_type_with_typemod(newattr->atttypid,
+													newattr->atttypmod)));
 		}
 
 		/*
@@ -1036,14 +1036,14 @@ checkMatviewColumns(TupleDesc newdesc, TupleDesc olddesc)
 			ereport(ERROR,
 					errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					errmsg("cannot change collation of materialized view column \"%s\" from \"%s\" to \"%s\"",
-							  NameStr(oldattr->attname),
-							  get_collation_name(oldattr->attcollation),
-							  get_collation_name(newattr->attcollation)));
+						   NameStr(oldattr->attname),
+						   get_collation_name(oldattr->attcollation),
+						   get_collation_name(newattr->attcollation)));
 		}
 	}
 
 	/*
-	 * We ignore the constraint fields since the new matview desc can't have any
-	 * constraints.
+	 * We ignore the constraint fields since the new matview desc can't have
+	 * any constraints.
 	 */
 }
